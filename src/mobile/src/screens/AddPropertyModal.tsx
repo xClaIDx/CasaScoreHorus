@@ -28,19 +28,26 @@ export function AddPropertyModal({ visible, onClose, onSave }: AddPropertyModalP
   const [address, setAddress] = useState('');
   const [zone, setZone] = useState('');
 
+  // Condiciones de habitabilidad y restricciones
   const [hasNaturalLight, setHasNaturalLight] = useState(false);
   const [freeEntry24h, setFreeEntry24h] = useState(false);
   const [hasCurfew, setHasCurfew] = useState(false);
   const [curfewHour, setCurfewHour] = useState('22');
   const [allowsVisitors, setAllowsVisitors] = useState(true);
   const [allowsCooking, setAllowsCooking] = useState(true);
+  const [petFriendly, setPetFriendly] = useState(false);
+  const [declaredTransparently, setDeclaredTransparently] = useState(true);
 
+  // Registro de las 4 fotos obligatorias categorizadas
   const [photos, setPhotos] = useState<Partial<PropertyPhotos>>({});
 
   const pickImage = async (type: keyof PropertyPhotos) => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert('Permiso Requerido', 'Se requiere acceso a la galeria para adjuntar fotos de verificacion.');
+      Alert.alert(
+        'Permiso Requerido',
+        'Se requiere acceso a la galeria multimedia para registrar las evidencias fotograficas.'
+      );
       return;
     }
 
@@ -51,27 +58,46 @@ export function AddPropertyModal({ visible, onClose, onSave }: AddPropertyModalP
       quality: 0.7,
     });
 
-    if (!result.canceled && result.assets[0].uri) {
+    if (!result.canceled && result.assets && result.assets.length > 0) {
       setPhotos((prev) => ({ ...prev, [type]: result.assets[0].uri }));
     }
   };
 
   const handleSubmit = () => {
+    // Normalizacion de separadores decimales
     const cleanPrice = parseFloat(price.replace(',', '.'));
     const cleanSize = parseFloat(sizeSqm.replace(',', '.'));
     const cleanDistance = parseFloat(distanceMeters.replace(',', '.'));
     const cleanTime = parseFloat(timeMinutesWalk.replace(',', '.'));
 
-    if (!title.trim() || isNaN(cleanPrice) || isNaN(cleanSize) || isNaN(cleanDistance) || isNaN(cleanTime)) {
-      Alert.alert('Datos Incompletos', 'Ingrese titulo, precio, tamano, distancia y tiempo de caminata.');
+    if (
+      !title.trim() ||
+      isNaN(cleanPrice) ||
+      isNaN(cleanSize) ||
+      isNaN(cleanDistance) ||
+      isNaN(cleanTime)
+    ) {
+      Alert.alert(
+        'Datos Incompletos',
+        'Por favor ingrese el titulo, precio mensual, area util (m2), distancia (m) y tiempo a pie (min).'
+      );
       return;
     }
 
+    // Resolucion segura de fotografias con respaldo técnico para pruebas locales
     const finalPhotos: PropertyPhotos = {
-      facadeUri: photos.facadeUri || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=500',
-      roomUri: photos.roomUri || 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=500',
-      bathroomUri: photos.bathroomUri || 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=500',
-      windowUri: photos.windowUri || 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=500',
+      facadeUri:
+        photos.facadeUri ||
+        'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=500',
+      roomUri:
+        photos.roomUri ||
+        'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=500',
+      bathroomUri:
+        photos.bathroomUri ||
+        'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=500',
+      windowUri:
+        photos.windowUri ||
+        'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=500',
     };
 
     const newProperty: Property = {
@@ -83,15 +109,19 @@ export function AddPropertyModal({ visible, onClose, onSave }: AddPropertyModalP
       timeMinutesWalk: cleanTime,
       hasNaturalLight,
       securityRating: 4.0,
-      services24h: { water: true, electricity: true, internet: true },
+      services24h: {
+        water: true,
+        electricity: true,
+        internet: true,
+      },
       restrictions: {
         freeEntry24h,
         hasCurfew,
         curfewHour: hasCurfew ? parseInt(curfewHour, 10) : undefined,
         allowsVisitors,
         allowsCooking,
-        petFriendly: false,
-        declaredTransparently: true,
+        petFriendly,
+        declaredTransparently,
       },
       landlordVerified: true,
       realPhotosVerified: true,
@@ -107,6 +137,7 @@ export function AddPropertyModal({ visible, onClose, onSave }: AddPropertyModalP
   return (
     <Modal visible={visible} animationType="slide" transparent={false}>
       <View style={styles.modalContainer}>
+        {/* Cabecera Formal Institucional */}
         <View style={styles.modalHeader}>
           <Text style={styles.modalHeaderTitle}>Registro Tecnico de Inmueble</Text>
           <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
@@ -115,9 +146,11 @@ export function AddPropertyModal({ visible, onClose, onSave }: AddPropertyModalP
         </View>
 
         <ScrollView contentContainerStyle={styles.formContent}>
-          <Text style={styles.sectionLabel}>Datos Generales y Costo</Text>
+          {/* Seccion 1: Identificacion y Costo */}
+          <Text style={styles.sectionLabel}>Datos Principales del Inmueble</Text>
           <TextInput
-            placeholder="Titulo descriptivo del inmueble"
+            placeholder="Titulo descriptivo del cuarto"
+            placeholderTextColor="#94A3B8"
             value={title}
             onChangeText={setTitle}
             style={styles.input}
@@ -125,6 +158,7 @@ export function AddPropertyModal({ visible, onClose, onSave }: AddPropertyModalP
           <View style={styles.rowInputs}>
             <TextInput
               placeholder="Precio mensual (S/.)"
+              placeholderTextColor="#94A3B8"
               value={price}
               onChangeText={setPrice}
               keyboardType="numeric"
@@ -132,6 +166,7 @@ export function AddPropertyModal({ visible, onClose, onSave }: AddPropertyModalP
             />
             <TextInput
               placeholder="Area util (m2)"
+              placeholderTextColor="#94A3B8"
               value={sizeSqm}
               onChangeText={setSizeSqm}
               keyboardType="numeric"
@@ -139,10 +174,12 @@ export function AddPropertyModal({ visible, onClose, onSave }: AddPropertyModalP
             />
           </View>
 
-          <Text style={styles.sectionLabel}>Ubicacion Respecto a la UNA Puno</Text>
+          {/* Seccion 2: Ubicacion respecto al Campus UNA Puno */}
+          <Text style={styles.sectionLabel}>Ubicacion y Desplazamiento a UNA Puno</Text>
           <View style={styles.rowInputs}>
             <TextInput
               placeholder="Distancia (metros)"
+              placeholderTextColor="#94A3B8"
               value={distanceMeters}
               onChangeText={setDistanceMeters}
               keyboardType="numeric"
@@ -150,6 +187,7 @@ export function AddPropertyModal({ visible, onClose, onSave }: AddPropertyModalP
             />
             <TextInput
               placeholder="Tiempo a pie (minutos)"
+              placeholderTextColor="#94A3B8"
               value={timeMinutesWalk}
               onChangeText={setTimeMinutesWalk}
               keyboardType="numeric"
@@ -157,25 +195,28 @@ export function AddPropertyModal({ visible, onClose, onSave }: AddPropertyModalP
             />
           </View>
           <TextInput
-            placeholder="Direccion (Ej. Av. Floral 412)"
+            placeholder="Direccion exacta (Ej. Av. Floral 412)"
+            placeholderTextColor="#94A3B8"
             value={address}
             onChangeText={setAddress}
             style={styles.input}
           />
           <TextInput
             placeholder="Barrio o sector (Ej. Laykakota, Bellavista)"
+            placeholderTextColor="#94A3B8"
             value={zone}
             onChangeText={setZone}
             style={styles.input}
           />
 
-          <Text style={styles.sectionLabel}>Condiciones y Restricciones</Text>
+          {/* Seccion 3: Condiciones y Restricciones */}
+          <Text style={styles.sectionLabel}>Condiciones de Habitabilidad y Reglas</Text>
           <TouchableOpacity
             style={[styles.toggleBtn, hasNaturalLight && styles.toggleBtnActive]}
             onPress={() => setHasNaturalLight(!hasNaturalLight)}
           >
             <Text style={[styles.toggleBtnText, hasNaturalLight && styles.toggleBtnTextActive]}>
-              Iluminacion Natural Directa (Otorga puntos)
+              Iluminacion Natural Directa (Otorga +8 pts)
             </Text>
           </TouchableOpacity>
 
@@ -184,7 +225,7 @@ export function AddPropertyModal({ visible, onClose, onSave }: AddPropertyModalP
             onPress={() => setFreeEntry24h(!freeEntry24h)}
           >
             <Text style={[styles.toggleBtnText, freeEntry24h && styles.toggleBtnTextActive]}>
-              Entrada Libre 24h con Llave Propia (Otorga puntos)
+              Entrada Libre 24h con Llave Propia (Otorga +5 pts)
             </Text>
           </TouchableOpacity>
 
@@ -193,13 +234,14 @@ export function AddPropertyModal({ visible, onClose, onSave }: AddPropertyModalP
             onPress={() => setHasCurfew(!hasCurfew)}
           >
             <Text style={[styles.toggleBtnText, hasCurfew && styles.toggleBtnTextAlert]}>
-              Tiene Toque de Queda / Cierre de Puerta (Resta puntos)
+              Toque de Queda / Cierre Nocturno (Resta puntos)
             </Text>
           </TouchableOpacity>
 
           {hasCurfew && (
             <TextInput
-              placeholder="Hora limite de llegada (24h, ej. 22 para 10 PM)"
+              placeholder="Hora limite de llegada (24h, ej. 22 para 10:00 PM)"
+              placeholderTextColor="#94A3B8"
               value={curfewHour}
               onChangeText={setCurfewHour}
               keyboardType="numeric"
@@ -212,7 +254,9 @@ export function AddPropertyModal({ visible, onClose, onSave }: AddPropertyModalP
             onPress={() => setAllowsVisitors(!allowsVisitors)}
           >
             <Text style={[styles.toggleBtnText, !allowsVisitors && styles.toggleBtnTextAlert]}>
-              {allowsVisitors ? 'Permite visitas de estudio' : 'Prohibicion total de visitas (Resta puntos)'}
+              {allowsVisitors
+                ? 'Permite visitas de companeros de estudio'
+                : 'Prohibicion total de visitas (Resta -12 pts)'}
             </Text>
           </TouchableOpacity>
 
@@ -221,10 +265,24 @@ export function AddPropertyModal({ visible, onClose, onSave }: AddPropertyModalP
             onPress={() => setAllowsCooking(!allowsCooking)}
           >
             <Text style={[styles.toggleBtnText, !allowsCooking && styles.toggleBtnTextAlert]}>
-              {allowsCooking ? 'Permite cocinar' : 'Prohibicion de cocinar (Resta puntos)'}
+              {allowsCooking
+                ? 'Permite cocinar en habitacion o area comun'
+                : 'Prohibicion de cocinar (Resta -8 pts)'}
             </Text>
           </TouchableOpacity>
 
+          <TouchableOpacity
+            style={[styles.toggleBtn, !declaredTransparently && styles.toggleBtnAlert]}
+            onPress={() => setDeclaredTransparently(!declaredTransparently)}
+          >
+            <Text style={[styles.toggleBtnText, !declaredTransparently && styles.toggleBtnTextAlert]}>
+              {declaredTransparently
+                ? 'Reglas declaradas con transparencia total'
+                : 'Reglas no transparentadas (Penalizacion critica de -25 pts)'}
+            </Text>
+          </TouchableOpacity>
+
+          {/* Seccion 4: Inspeccion Fotografica Requerida */}
           <Text style={styles.sectionLabel}>Inspeccion Fotografica (4 Categorias)</Text>
           <View style={styles.photoGrid}>
             <View style={styles.photoBox}>
@@ -273,7 +331,7 @@ export function AddPropertyModal({ visible, onClose, onSave }: AddPropertyModalP
           </View>
 
           <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit}>
-            <Text style={styles.submitBtnText}>Registrar Publicacion</Text>
+            <Text style={styles.submitBtnText}>Registrar y Calcular Scoring</Text>
           </TouchableOpacity>
         </ScrollView>
       </View>
@@ -296,7 +354,15 @@ const styles = StyleSheet.create({
   closeBtn: { padding: 6 },
   closeBtnText: { color: '#E2E8F0', fontSize: 13, fontWeight: '600' },
   formContent: { padding: 16, paddingBottom: 40 },
-  sectionLabel: { fontSize: 13, fontWeight: '700', color: '#0A2D5A', marginTop: 14, marginBottom: 8, textTransform: 'uppercase' },
+  sectionLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0A2D5A',
+    marginTop: 14,
+    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
   input: {
     borderWidth: 1,
     borderColor: '#CBD5E1',
@@ -351,5 +417,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 22,
   },
-  submitBtnText: { color: '#FFFFFF', fontSize: 14, fontWeight: '700', textTransform: 'uppercase' },
+  submitBtnText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
 });
