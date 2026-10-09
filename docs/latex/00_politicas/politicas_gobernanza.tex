@@ -1,0 +1,223 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- PAQUETES DE CONFIGURACIÓN ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-tabla]{babel}
+\usepackage{geometry}
+\geometry{
+    top=3.3cm,
+    bottom=2.4cm,
+    left=2.2cm,
+    right=2.2cm,
+    headheight=60pt,
+    headsep=15pt,
+    footskip=20pt
+}
+
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{hyperref}
+
+% --- PALETA INSTITUCIONAL FIEI / UNA PUNO ---
+\definecolor{AzulUNA}{RGB}{10, 45, 90}
+\definecolor{DoradoFIEI}{RGB}{180, 130, 20}
+\definecolor{GrisOscuro}{RGB}{50, 50, 50}
+\definecolor{GrisLineas}{RGB}{210, 215, 225}
+
+% --- CONFIGURACIÓN DE LISTAS ---
+\setlist{topsep=3pt, itemsep=2.5pt, parsep=1pt}
+
+% --- FORMATO DE ENLACES ---
+\hypersetup{
+    colorlinks=true,
+    linkcolor=AzulUNA,
+    urlcolor=AzulUNA,
+    citecolor=AzulUNA
+}
+
+% --- FORMATO DE TÍTULOS ---
+\titleformat{\section}{\color{AzulUNA}\normalfont\large\bfseries}{\thesection.}{0.7em}{}[\color{AzulUNA}\titlerule]
+\titleformat{\subsection}{\color{AzulUNA}\normalfont\normalsize\bfseries}{\thesubsection.}{0.5em}{}
+\titlespacing*{\section}{0pt}{10pt}{5pt}
+\titlespacing*{\subsection}{0pt}{8pt}{4pt}
+
+% --- ENCABEZADO Y PIE DE PÁGINA (fancyhdr) ---
+\pagestyle{fancy}
+\fancyhf{}
+
+% Logos en esquinas superiores sin línea divisoria invasiva
+\fancyhead[L]{%
+    \includegraphics[height=1.45cm,keepaspectratio]{../../assets/img/logo_fiei.png}%
+}
+\fancyhead[C]{%
+    \scriptsize \textbf{\textcolor{AzulUNA}{UNIVERSIDAD NACIONAL DEL ALTIPLANO DE PUNO}}\\[2pt]
+    \tiny \textcolor{GrisOscuro}{FACULTAD DE INGENIERÍA ESTADÍSTICA E INFORMÁTICA}\\[2pt]
+    \scriptsize \textbf{\textcolor{AzulUNA}{Gestión de Proyectos TICS (EST315) \textbar\ Team Sobrevivientes}}\\[2pt]
+    \footnotesize \textbf{\textcolor{DoradoFIEI}{POLÍTICAS DEL PROYECTO Y MARCO DE GOBERNANZA}}%
+}
+\fancyhead[R]{%
+    \includegraphics[height=2.05cm,keepaspectratio]{../../assets/img/logo_equipo.png}%
+}
+
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\headrule}{}
+
+% Pie de página
+\fancyfoot[L]{\scriptsize \textcolor{GrisOscuro}{CasScore -- Sistema Multicriterio de Alquileres}}
+\fancyfoot[C]{\small \thepage}
+\fancyfoot[R]{\scriptsize \textcolor{GrisOscuro}{Puno, Perú -- Semestre 2026-I}}
+\renewcommand{\footrulewidth}{0.4pt}
+
+\begin{document}
+
+% =========================================================================
+% PÁGINA 1: IDENTIFICACIÓN, PRINCIPIOS Y ORGANIZACIÓN DEL EQUIPO
+% =========================================================================
+
+\begin{center}
+    {\Large \textbf{\textcolor{AzulUNA}{POLÍTICAS DEL PROYECTO Y MARCO DE GOBERNANZA}}}\\[3pt]
+    {\normalsize \textbf{Normas de Convivencia, Protocolos Git y Estándares de Arquitectura}}\\[4pt]
+    \footnotesize \textbf{Fecha de Aprobación:} 28 de agosto de 2026 \quad \textbar\quad \textbf{Versión:} 1.0 Oficial
+\end{center}
+
+\vspace{0.1cm}
+
+\noindent\begin{tabularx}{\textwidth}{@{}llXX@{}}
+\toprule
+\textbf{Curso:} EST315 -- Gestión de Proyectos TICS & \textbf{Docente:} Ing. Renzo Apaza Cutipa \\
+\textbf{Equipo:} Team Sobrevivientes  \\
+\bottomrule
+\end{tabularx}
+
+\vspace{0.3cm}
+
+\section{Fundamento Metodológico y Principios Rectores}
+El estándar de trabajo del equipo se sustenta en la premisa \textit{Sistematizar antes de automatizar} y el ciclo operativo IPO (\textit{Inputs $\rightarrow$ Process $\rightarrow$ Outputs}) promovido por estándares internacionales de gestión de proyectos. Ninguna tarea técnica o módulo de código se inicia sin antes validar sus insumos documentales, definir responsables directos y establecer criterios de verificación cuantificables.
+
+El marco metodológico adoptado es de carácter híbrido: gobernanza predictiva y control riguroso de línea base, integrado con el marco ágil Scrum para la construcción del producto en ciclos iterativos de desarrollo continuo.
+
+\section{Organización del Equipo y Distribución de Roles}
+El equipo define un organigrama formal donde cada integrante asume la titularidad de un área operativa bajo supervisión directa del Project Manager:
+
+\vspace{0.25cm}
+\noindent\begin{tabularx}{\textwidth}{p{4.8cm} p{3.8cm} X}
+\toprule
+\textbf{Integrante} & \textbf{Rol Principal} & \textbf{Responsabilidad Operativa} \\
+\midrule
+\textbf{Paricahua Pari, Clyde Neil} & Project Manager (PM) & Coordinación ejecutiva, control de alcance, resolución de discrepancias, relación con la cátedra y firma de actas. \\
+\addlinespace[4pt]
+\textbf{Apaza Solis, Ruth Karina} & Analista de Planificación & Desglose WBS/EDT, administración del tablero Kanban, control del cronograma Gantt y supervisión de dependencias. \\
+\addlinespace[4pt]
+\textbf{Tarqui Ajahuana, Eliseo} & Especialista Técnico / Arquitectura & Diseño del modelo relacional en Supabase, normalización algorítmica (escala 0--100), pruebas técnicas y desarrollo del aplicativo. \\
+\addlinespace[4pt]
+\textbf{Quisbert Quispe, Viviana Mary} & Gestora de Comunicación, Riesgos y Docs & Matriz de riesgos (PDCA), redacción de actas de seguimiento, custodia de la Wiki y compilación formal en LaTeX. \\
+\bottomrule
+\end{tabularx}
+\vspace{0.3cm}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Participación Transversal:} Cada integrante responde por su rol titular; no obstante, todos los miembros mantienen conocimiento activo de las demás áreas, colaborando de manera transversal según las exigencias de cada sprint.
+    \item \textbf{Resolución de Desacuerdos:} Todo diferendo operativo o conceptual se procesa inicialmente mediante deliberación interna en reunión de equipo. De persistir el desacuerdo, el Project Manager asume la decisión final en coordinación con la cátedra.
+\end{itemize}
+
+\clearpage
+
+% =========================================================================
+% PÁGINA 2: PROTOCOLO DE REUNIONES, GITHUB Y CONTROL DE VERSIONES
+% =========================================================================
+
+\section{Protocolo de Sesiones de Trabajo y Sincronización}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Horario Regular de Sincronización:} Las reuniones plenarias del equipo se desarrollan los días \textbf{martes y viernes de 20:00 a 21:00 horas} tras la conclusión de las actividades académicas.
+    \item \textbf{Dinámica de Retroalimentación:} Cada sesión inicia con la verificación de acuerdos de la jornada precedente, informe de impedimentos y replanteo de asignaciones según el avance registrado en el tablero.
+    \item \textbf{Gestión de Desviaciones y Nivelación Técnica:} Frente a desajustes iniciales en la consolidación del equipo o retrasos acumulados en la organización, se establecen sesiones extraordinarias de nivelación técnica para resguardar la ruta crítica sin comprometer la calidad del producto.
+\end{itemize}
+
+\section{Estándar de Control de Versiones y Trabajo en GitHub}
+Queda prohibido el desarrollo local desarticulado y el intercambio de código o documentación por canales no auditables. Todo artefacto reside centralizado en el repositorio oficial.
+
+\subsection{Estrategia de Ramas (Git Branching)}
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Protección Estricta de la Rama \texttt{main}:} No se permiten envíos (\textit{push}) directos sobre la rama central de producción.
+    \item \textbf{Ramas Temáticas:} El trabajo operativo se efectúa mediante ramas aisladas:
+    \begin{itemize}
+        \item \texttt{feature/nombre-tarea}: Incorporación de nuevas funciones y módulos.
+        \item \texttt{fix/descripcion-error}: Corrección de incidencias o defectos de software.
+        \item \texttt{docs/nombre-documento}: Elaboración y mantenimiento de expedientes técnicos.
+    \end{itemize}
+    \item \textbf{Revisión por Pares (Code Review Obligatorio):} Toda fusión a \texttt{main} requiere la apertura de un \textit{Pull Request} (PR), el cual debe contar con la aprobación documentada de al menos un integrante del equipo.
+\end{enumerate}
+
+\subsection{Estandarización de Confirmaciones (Commits Semánticos)}
+Todo registro de versión debe implementar el estándar Conventional Commits vinculado al módulo respectivo:
+\begin{itemize}[leftmargin=*]
+    \item \texttt{feat(scoring): normalizacion min-max para variable de costo}
+    \item \texttt{fix(auth): correccion en flujo de validacion de credenciales}
+    \item \texttt{docs(charter): incorporacion de objetivos especificos y restricciones}
+    \item \texttt{test(qa): definicion de matriz de pruebas para modulo de busqueda}
+\end{itemize}
+
+\section{Ecosistema de Seguimiento y Soporte en GitHub}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{GitHub Projects (Kanban):} Administrado por la Analista de Planificación (Ruth Karina), estructurado en cuatro estados: \textit{Backlog / Por hacer}, \textit{En Progreso}, \textit{En Revisión (PR)} y \textit{Completado}.
+    \item \textbf{Issues Vinculados:} Cada tarea emanada de la WBS se registra con su respectivo responsable, plazo perentorio y criterios de aceptación.
+    \item \textbf{Releases y Tags:} Generación periódica de etiquetas de versión (\texttt{v1.0-MVP}) para evidenciar avances formales ante la cátedra.
+    \item \textbf{Repositorio Documental:} La Gestora de Comunicación (Viviana Mary) garantiza la coexistencia sincronizada de expedientes en Markdown (para consulta y contexto) y LaTeX (para compilación oficial).
+\end{itemize}
+
+\clearpage
+
+% =========================================================================
+% PÁGINA 3: POLÍTICAS DE PRODUCTO Y BLOQUE DE SUSCRIPCIÓN
+% =========================================================================
+
+\section{Políticas de Cliente, Producto y Propósito}
+
+\subsection{Políticas de Cliente}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Accesibilidad Universal:} Formulario simple, intuitivo y optimizado para móviles (Expo/React), diseñado para que cualquier persona pueda utilizarlo sin conocimientos técnicos previos.
+    \item \textbf{Confidencialidad de la Información:} Los datos personales y patrones de búsqueda se gestionan bajo reserva absoluta, prohibiéndose su comercialización o transferencia a terceros.
+\end{itemize}
+
+\subsection{Políticas de Producto y Delimitación}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Alcance Acotado (MVP Primero):} Se prioriza usuarios, publicaciones, búsqueda, filtros y el motor de cálculo de score. Mapas avanzados quedan para una segunda etapa, y Machine Learning queda fuera del alcance inicial.
+    \item \textbf{Normalización Algebraica Escala 0--100:} Ninguna variable cuantitativa (precio, distancia, seguridad) se procesa en el motor multicriterio sin previa estandarización a la escala $[0, 100]$.
+    \item \textbf{Delimitación del Sistema:} El aplicativo \textbf{no} realiza intermediación de pagos, \textbf{no} formaliza contratos legales y \textbf{no} sustituye la visita física presencial al inmueble.
+\end{itemize}
+
+\subsection{Políticas de Propósito}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Transparencia Algorítmica:} Queda prohibido el uso de recomendaciones en caja negra. Todo puntaje debe desglosar los criterios que justifican la recomendación.
+    \item \textbf{Soberanía de Preferencias:} Los pesos asignados por el usuario rigen por sobre cualquier criterio interno por defecto de la plataforma.
+\end{itemize}
+
+\vspace{0.4cm}
+
+\section{Suscripción y Conformidad del Equipo}
+\noindent En señal de plena conformidad con las directrices, compromisos y normas de gobernanza estipuladas, los integrantes del equipo suscriben el presente instrumento formal:
+
+\vspace{1.8cm}
+
+% Bloque blindado con parbox centradas: nunca se desbordan ni pierden sus lineas
+\begin{center}
+\begin{tabular}{c c c}
+    \parbox{6.5cm}{\centering \rule{6.0cm}{0.6pt}\\[5pt] \textbf{Clyde Neil Paricahua Pari}\\[2pt] {\footnotesize Project Manager}} 
+    & \hspace{0.8cm} &
+    \parbox{6.5cm}{\centering \rule{6.0cm}{0.6pt}\\[5pt] \textbf{Ruth Karina Apaza Solis}\\[2pt] {\footnotesize Analista de Planificación}} 
+    \\[2.2cm]
+    \parbox{6.5cm}{\centering \rule{6.0cm}{0.6pt}\\[5pt] \textbf{Eliseo Tarqui Ajahuana}\\[2pt] {\footnotesize Especialista Técnico / Arquitectura}} 
+    & \hspace{0.8cm} &
+    \parbox{6.5cm}{\centering \rule{6.0cm}{0.6pt}\\[5pt] \textbf{Viviana Mary Quisbert Quispe}\\[2pt] {\footnotesize Gestora de Comunicación y Riesgos}}
+\end{tabular}
+\end{center}
+
+\end{document}

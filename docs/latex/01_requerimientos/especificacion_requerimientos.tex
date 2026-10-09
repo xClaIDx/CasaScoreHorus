@@ -1,0 +1,240 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- PAQUETES DE CONFIGURACIÓN ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-tabla]{babel}
+\usepackage{geometry}
+\geometry{
+    top=3.3cm,
+    bottom=2.3cm,
+    left=2.2cm,
+    right=2.2cm,
+    headheight=60pt,
+    headsep=15pt,
+    footskip=20pt
+}
+
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{hyperref}
+
+% --- PALETA INSTITUCIONAL FIEI / UNA PUNO ---
+\definecolor{AzulUNA}{RGB}{10, 45, 90}
+\definecolor{DoradoFIEI}{RGB}{180, 130, 20}
+\definecolor{GrisOscuro}{RGB}{50, 50, 50}
+\definecolor{GrisFondo}{RGB}{245, 247, 250}
+
+% --- CONFIGURACIÓN DE LISTAS ---
+\setlist{topsep=2pt, itemsep=2pt, parsep=1pt}
+
+% --- FORMATO DE ENLACES ---
+\hypersetup{
+    colorlinks=true,
+    linkcolor=AzulUNA,
+    urlcolor=AzulUNA,
+    citecolor=AzulUNA
+}
+
+% --- FORMATO DE TÍTULOS ---
+\titleformat{\section}{\color{AzulUNA}\normalfont\large\bfseries}{\thesection.}{0.7em}{}[\color{AzulUNA}\titlerule]
+\titleformat{\subsection}{\color{AzulUNA}\normalfont\normalsize\bfseries}{\thesubsection.}{0.5em}{}
+\titleformat{\subsubsection}{\color{DoradoFIEI}\normalfont\small\bfseries}{\thesubsubsection.}{0.4em}{}
+\titlespacing*{\section}{0pt}{8pt}{4pt}
+\titlespacing*{\subsection}{0pt}{6pt}{3pt}
+\titlespacing*{\subsubsection}{0pt}{4pt}{2pt}
+
+% --- ENCABEZADO Y PIE DE PÁGINA (fancyhdr) ---
+\pagestyle{fancy}
+\fancyhf{}
+
+% Encabezado institucional: Logo FIEI (1.45cm) y Logo Equipo (2.05cm, 40% más grande)
+\fancyhead[L]{%
+    \includegraphics[height=1.45cm,keepaspectratio]{../../assets/img/logo_fiei.png}%
+}
+\fancyhead[C]{%
+    \scriptsize \textbf{\textcolor{AzulUNA}{UNIVERSIDAD NACIONAL DEL ALTIPLANO DE PUNO}}\\[2pt]
+    \tiny \textcolor{GrisOscuro}{FACULTAD DE INGENIERÍA ESTADÍSTICA E INFORMÁTICA}\\[2pt]
+    \scriptsize \textbf{\textcolor{AzulUNA}{Gestión de Proyectos TICS (EST315) \textbar\ Team Sobrevivientes}}\\[2pt]
+    \footnotesize \textbf{\textcolor{DoradoFIEI}{ESPECIFICACIÓN FORMAL DE REQUERIMIENTOS (SRS)}}%
+}
+\fancyhead[R]{%
+    \includegraphics[height=2.05cm,keepaspectratio]{../../assets/img/logo_equipo.png}%
+}
+
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\headrule}{}
+
+\fancyfoot[L]{\scriptsize \textcolor{GrisOscuro}{Línea Base de Requerimientos: CasScore vs. Horus Sentinel}}
+\fancyfoot[C]{\small \thepage}
+\fancyfoot[R]{\scriptsize \textcolor{GrisOscuro}{Puno, Perú -- Semestre 2026-I}}
+\renewcommand{\footrulewidth}{0.4pt}
+
+\begin{document}
+
+% =========================================================================
+% PÁGINA 1: MARCO METODOLÓGICO Y REQUERIMIENTOS DE CASA SCORE
+% =========================================================================
+
+\begin{center}
+    {\Large \textbf{\textcolor{AzulUNA}{ESPECIFICACIÓN FORMAL DE REQUERIMIENTOS DE SOFTWARE}}}\\[3pt]
+    {\normalsize \textbf{Ingeniería de Requerimientos y Análisis Comparativo de Alternativas TIC}}\\[4pt]
+    \footnotesize \textbf{Fecha de Emisión:} 04 de septiembre de 2026 \quad \textbar\quad \textbf{Versión:} 1.0 Línea Base
+\end{center}
+
+\vspace{0.1cm}
+
+\noindent\begin{tabularx}{\textwidth}{@{}llXX@{}}
+\toprule
+\textbf{Curso:} EST315 -- Gestión de Proyectos TICS & \textbf{Docente:} Ing. Renzo Apaza Cutipa \\
+\textbf{Equipo:} Team Sobrevivientes & \textbf{Ciclo:} Semestre Académico 2026-I \\
+\bottomrule
+\end{tabularx}
+
+\vspace{0.2cm}
+
+\section{Propósito y Marco de Ingeniería de Requisitos}
+El presente documento consolida la captura y especificación técnica de requerimientos para las dos propuestas evaluadas en la Unidad I: \textbf{CASA SCORE (AlquilaPuno)} y \textbf{Horus Sentinel}. Siguiendo la premisa de \textit{Sistematizar antes de automatizar} y el ciclo IPO (\textit{Inputs $\rightarrow$ Process $\rightarrow$ Outputs}), se desglosan los requerimientos funcionales (RF), requerimientos no funcionales (RNF) y límites operativos para validar su viabilidad en un horizonte de ejecución de 6 semanas.
+
+\section{Propuesta 1: CASA SCORE (AlquilaPuno)}
+
+\subsection{Definición del Problema y Objetivos del Sistema}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Problema Central:} La migración estudiantil masiva hacia la UNA Puno genera dificultades críticas para arrendar habitaciones: comparación manual dispersa de costo, distancia y servicios, asimetría de información y vulnerabilidad ante ofertas fraudulentas o condiciones abusivas.
+    \item \textbf{Objetivo General:} Desarrollar un sistema TIC inteligente de recomendación multicriterio tipo marketplace donde propietarios publiquen habitaciones y estudiantes/trabajadores encuentren opciones seguras mediante un Índice de Confianza y un sistema de reseñas bidireccional.
+    \item \textbf{Objetivos Específicos:} (1) Capturar prioridades, presupuesto y cercanía al campus; (2) Normalizar y ponderar variables objetivas; (3) Generar un ranking transparente justificando el cálculo del CASA SCORE.
+\end{itemize}
+
+\subsection{Requerimientos Funcionales (RF -- CasScore)}
+\noindent\begin{tabularx}{\textwidth}{p{2.3cm} p{4.6cm} X}
+\toprule
+\textbf{Código} & \textbf{Requisito} & \textbf{Especificación Operativa y Criterio de Validación} \\
+\midrule
+\textbf{RF-CS-01} & Autenticación y Perfiles & Registro y login con Supabase Auth para arrendatarios y propietarios, incluyendo perfil con validación de correo. \\
+\addlinespace[3pt]
+\textbf{RF-CS-02} & Publicación de Inmuebles & Registro de cuartos con variables obligatorias: canon (S/.), geolocalización, tamaño ($m^2$), servicios 24h, restricciones y fotos. \\
+\addlinespace[3pt]
+\textbf{RF-CS-03} & Ponderación Dinámica & Panel donde el usuario define los pesos porcentuales de sus prioridades ($w_{\text{precio}} + w_{\text{distancia}} + w_{\text{seguridad}} + w_{\text{servicios}} = 100\%$). \\
+\addlinespace[3pt]
+\textbf{RF-CS-04} & Normalización 0--100 & Estandarización algebraica obligatoria de variables a la escala uniforme $[0, 100]$ previa al cálculo multicriterio. \\
+\addlinespace[3pt]
+\textbf{RF-CS-05} & Motor de Ranking & Ejecución del algoritmo determinístico ponderado y ordenamiento interactivo de habitaciones en tiempo real. \\
+\addlinespace[3pt]
+\textbf{RF-CS-06} & Transparencia Algorítmica & Visualización desglosada de los puntos asignados por cada criterio (prohibición estricta de resultados en caja negra). \\
+\addlinespace[3pt]
+\textbf{RF-CS-07} & Índice de Confianza & Cálculo de reputación a partir de: DNI validado del propietario, fotos verificadas, transparencia de restricciones y contratos previos. \\
+\addlinespace[3pt]
+\textbf{RF-CS-08} & Reseñas Bidireccionales & Calificación mutua (estudiante $\leftrightarrow$ arrendador) habilitada únicamente tras confirmar el alquiler, con botones de reporte de abuso. \\
+\bottomrule
+\end{tabularx}
+
+\clearpage
+
+% =========================================================================
+% PÁGINA 2: RNF CASASCORE Y REQUERIMIENTOS COMPLETOS DE HORUS SENTINEL
+% =========================================================================
+
+\subsection{Requerimientos No Funcionales y Límites (CasScore)}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{RNF-CS-01 (Rendimiento):} El motor multicriterio debe calcular y ordenar hasta 100 alternativas habitacionales en un tiempo menor a 250 ms.
+    \item \textbf{RNF-CS-02 (Stack y Despliegue Gratuito):} Frontend en Next.js (web) y prototipo móvil en Expo (React Native), backend con Supabase (PostgreSQL) y cartografía con Leaflet / OpenStreetMap en capas gratuitas.
+    \item \textbf{RNF-CS-03 (Seguridad de Datos):} Implementación de Row Level Security (RLS) en PostgreSQL para aislamiento de información confidencial.
+    \item \textbf{Delimitación del Alcance (No Incluye):} No realiza intermediación de pagos bancarios, no redacta contratos legales de arrendamiento, no garantiza la veracidad material de las publicaciones ni sustituye la visita física presencial.
+\end{itemize}
+
+\vspace{0.2cm}
+
+\section{Propuesta 2: Horus Sentinel}
+
+\subsection{Definición del Problema y Objetivos del Sistema}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Problema Central:} Ausencia de datos analíticos georreferenciados sobre la concentración espacial y horaria de delitos urbanos, provocando patrullajes policiales ineficientes y desplazamientos peatonales en zonas vulnerables.
+    \item \textbf{Objetivo General:} Desarrollar una plataforma geoespacial predictiva que analice microdatos de denuncias e incidentes para generar mapas de calor dinámicos por zona y horario, facilitando el ruteo seguro.
+    \item \textbf{Objetivos Específicos:} (1) Estimar riesgo espaciotemporal con modelos de estadística espacial; (2) Detectar brotes con concentración anómala de incidentes; (3) Desplegar rutas seguras en mapa interactivo.
+\end{itemize}
+
+\subsection{Requerimientos Funcionales (RF -- Horus Sentinel)}
+\noindent\begin{tabularx}{\textwidth}{p{2.3cm} p{4.6cm} X}
+\toprule
+\textbf{Código} & \textbf{Requisito} & \textbf{Especificación Operativa y Criterio de Validación} \\
+\midrule
+\textbf{RF-HS-01} & Ingesta Espaciotemporal & Carga estructurada de denuncias: marca temporal (fecha/hora), coordenadas espaciales ($x,y$), tipo delictivo y severidad. \\
+\addlinespace[3pt]
+\textbf{RF-HS-02} & Densidad Kernel (KDE) & Algoritmo Kernel Density Estimation para estimar la superficie de calor continuo del riesgo delictivo basal. \\
+\addlinespace[3pt]
+\textbf{RF-HS-03} & Proceso de Poisson & Modelado estocástico no homogéneo para estimar réplicas delictivas condicionadas por eventos próximos en tiempo y espacio. \\
+\addlinespace[3pt]
+\textbf{RF-HS-04} & Capas por Franjas Horarias & Segmentación dinámica del riesgo por ventanas temporales específicas (mañana, tarde, noche y madrugada). \\
+\addlinespace[3pt]
+\textbf{RF-HS-05} & Detección de Anomalías & Identificación estadística de desviaciones anómalas en relación con la línea base histórica del cuadrante urbano. \\
+\addlinespace[3pt]
+\textbf{RF-HS-06} & Ruteo Seguro ($A^*$ Modificado) & Cálculo de trayectorias peatonales sobre grafo vial minimizando la función de coste: $\text{Costo} = \alpha \cdot \text{Distancia} + \beta \cdot \text{Riesgo}$. \\
+\bottomrule
+\end{tabularx}
+
+\subsection{Requerimientos No Funcionales, Riesgos y Límites (Horus Sentinel)}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{RNF-HS-01 (Precisión Espacial):} Georreferenciación de incidentes con tolerancia espacial máxima de 15 metros en el plano cartográfico.
+    \item \textbf{RNF-HS-02 (Riesgo Clave y Mitigación de Sesgo):} Mitigar el sesgo hacia zonas históricamente más vigiladas (efecto tipo PredPol) mediante la combinación de denuncias oficiales con reportes ciudadanos auditados.
+    \item \textbf{Delimitación del Alcance (No Incluye):} No tiene cobertura nacional (acotado a un distrito piloto urbano), no ejecuta reconocimiento facial, no incluye videovigilancia en vivo ni identifica sospechosos.
+\end{itemize}
+
+\clearpage
+
+% =========================================================================
+% PÁGINA 3: MATRIZ DE DECISIÓN TÉCNICA Y BLOQUE DE SUSCRIPCIÓN
+% =========================================================================
+
+\section{Matriz Comparativa y Dictamen de Factibilidad de Cartera}
+Para resguardar el cumplimiento de los entregables del semestre, el equipo contrastó formalmente las especificaciones de ambas soluciones:
+
+\vspace{0.2cm}
+\noindent\begin{tabularx}{\textwidth}{p{3.8cm} X X}
+\toprule
+\textbf{Dimensión de Análisis} & \textbf{CASA SCORE (AlquilaPuno)} & \textbf{Horus Sentinel} \\
+\midrule
+\textbf{Complejidad Algorítmica} & \textbf{Media:} Normalización lineal y modelo multicriterio determinístico con suma ponderada. & \textbf{Alta:} Densidad Kernel, Poisson espaciotemporal y grafos $A^*$ con pesos multiobjetivo. \\
+\addlinespace[3pt]
+\textbf{Fuentes e Insumos de Datos} & \textbf{Alta e Inmediata:} Levantamiento directo de publicaciones en el entorno de la UNA Puno. & \textbf{Crítica / Bloqueante:} Requiere microdatos policiales y convenios con comisarías distritales. \\
+\addlinespace[3pt]
+\textbf{Factibilidad en 6 Semanas} & \textbf{Plenamente Viable:} Construcción y entrega de un MVP funcional verificado en el Sprint 5. & \textbf{Inviable:} La gestión de convenios y calibración espacial excede los plazos académicos. \\
+\addlinespace[3pt]
+\textbf{Costo de Infraestructura} & \textbf{Cero:} Operación completa soportada en capas gratuitas de Supabase, Vercel y Leaflet. & \textbf{Elevado:} Demanda cómputo geoespacial intensivo y servidores de procesamiento espacial. \\
+\addlinespace[3pt]
+\textbf{Dictamen Metodológico} & \textbf{SELECCIONADO} como proyecto oficial del equipo para el ciclo de vida de desarrollo. & \textbf{DESESTIMADO} por riesgo de bloqueo de datos externos y desborde temporal. \\
+\bottomrule
+\end{tabularx}
+
+\vspace{0.3cm}
+
+\section{Conclusión y Congelamiento de Requerimientos}
+Se formaliza el congelamiento de los requerimientos de \textbf{CASA SCORE} como la Línea Base de Alcance definitiva del equipo, constituyendo el insumo obligatorio para redactar el Project Charter y la WBS.
+
+\vspace{0.4cm}
+
+\section{Suscripción y Conformidad del Equipo}
+\noindent Los miembros del equipo técnico aprueban y suscriben la presente especificación técnica:
+
+\vspace{1.8cm}
+
+\begin{center}
+\begin{tabular}{c c c}
+    \parbox{6.5cm}{\centering \rule{6.0cm}{0.6pt}\\[5pt] \textbf{Clyde Neil Paricahua Pari}\\[2pt] {\footnotesize Project Manager}} 
+    & \hspace{0.8cm} &
+    \parbox{6.5cm}{\centering \rule{6.0cm}{0.6pt}\\[5pt] \textbf{Ruth Karina Apaza Solis}\\[2pt] {\footnotesize Analista de Planificación}} 
+    \\[2.2cm]
+    \parbox{6.5cm}{\centering \rule{6.0cm}{0.6pt}\\[5pt] \textbf{Eliseo Tarqui Ajahuana}\\[2pt] {\footnotesize Especialista Técnico / Arquitectura}} 
+    & \hspace{0.8cm} &
+    \parbox{6.5cm}{\centering \rule{6.0cm}{0.6pt}\\[5pt] \textbf{Viviana Mary Quisbert Quispe}\\[2pt] {\footnotesize Gestora de Comunicación y Riesgos}}
+\end{tabular}
+\end{center}
+
+\end{document}

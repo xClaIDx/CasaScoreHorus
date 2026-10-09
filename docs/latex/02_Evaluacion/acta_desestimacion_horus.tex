@@ -1,0 +1,186 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- PAQUETES DE CONFIGURACIÓN ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-tabla]{babel}
+\usepackage{geometry}
+\geometry{
+    top=3.3cm,
+    bottom=2.3cm,
+    left=2.2cm,
+    right=2.2cm,
+    headheight=60pt,
+    headsep=15pt,
+    footskip=20pt
+}
+
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{hyperref}
+
+% --- PALETA INSTITUCIONAL FIEI / UNA PUNO ---
+\definecolor{AzulUNA}{RGB}{10, 45, 90}
+\definecolor{DoradoFIEI}{RGB}{180, 130, 20}
+\definecolor{GrisOscuro}{RGB}{50, 50, 50}
+\definecolor{RojoAlerta}{RGB}{150, 30, 30}
+
+% --- CONFIGURACIÓN DE LISTAS ---
+\setlist{topsep=2pt, itemsep=2pt, parsep=1pt}
+
+% --- FORMATO DE ENLACES ---
+\hypersetup{
+    colorlinks=true,
+    linkcolor=AzulUNA,
+    urlcolor=AzulUNA,
+    citecolor=AzulUNA
+}
+
+% --- FORMATO DE TÍTULOS ---
+\titleformat{\section}{\color{AzulUNA}\normalfont\large\bfseries}{\thesection.}{0.7em}{}[\color{AzulUNA}\titlerule]
+\titleformat{\subsection}{\color{AzulUNA}\normalfont\normalsize\bfseries}{\thesubsection.}{0.5em}{}
+\titlespacing*{\section}{0pt}{7pt}{3pt}
+\titlespacing*{\subsection}{0pt}{5pt}{2pt}
+
+% --- ENCABEZADO Y PIE DE PÁGINA (fancyhdr) ---
+\pagestyle{fancy}
+\fancyhf{}
+
+% Encabezado institucional: Logo FIEI (1.45cm) y Logo Equipo (2.05cm, 40% más grande)
+\fancyhead[L]{%
+    \includegraphics[height=1.45cm,keepaspectratio]{../../assets/img/logo_fiei.png}%
+}
+\fancyhead[C]{%
+    \scriptsize \textbf{\textcolor{AzulUNA}{UNIVERSIDAD NACIONAL DEL ALTIPLANO DE PUNO}}\\[2pt]
+    \tiny \textcolor{GrisOscuro}{FACULTAD DE INGENIERÍA ESTADÍSTICA E INFORMÁTICA}\\[2pt]
+    \scriptsize \textbf{\textcolor{AzulUNA}{Gestión de Proyectos TICS (EST315) \textbar\ Team Sobrevivientes}}\\[2pt]
+    \footnotesize \textbf{\textcolor{DoradoFIEI}{ACTA DE EVALUACIÓN DE CARTERA Y DESESTIMACIÓN TÉCNICA}}%
+}
+\fancyhead[R]{%
+    \includegraphics[height=2.05cm,keepaspectratio]{../../assets/img/logo_equipo.png}%
+}
+
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\headrule}{}
+
+\fancyfoot[L]{\scriptsize \textcolor{GrisOscuro}{Resolución de Cartera: Cancelación de Horus Sentinel}}
+\fancyfoot[C]{\small \thepage}
+\fancyfoot[R]{\scriptsize \textcolor{GrisOscuro}{Puno, Perú -- Semestre 2026-I}}
+\renewcommand{\footrulewidth}{0.4pt}
+
+\begin{document}
+
+% =========================================================================
+% PÁGINA 1: ANTECEDENTES Y SUSTENTO TÉCNICO DE LA DESESTIMACIÓN
+% =========================================================================
+
+\begin{center}
+    {\Large \textbf{\textcolor{AzulUNA}{ACTA DE EVALUACIÓN TÉCNICA Y DESESTIMACIÓN DE PROYECTO}}}\\[3pt]
+    {\normalsize \textbf{Resolución de Cancelación de Horus Sentinel y Priorización de CasScore}}\\[4pt]
+    \footnotesize \textbf{Fecha de Sesión:} 08 de septiembre de 2026 \quad \textbar\quad \textbf{Estado:} Aprobado por Unanimidad
+\end{center}
+
+\vspace{0.1cm}
+
+\noindent\begin{tabularx}{\textwidth}{@{}llXX@{}}
+\toprule
+\textbf{Curso:} EST315 -- Gestión de Proyectos TICS & \textbf{Docente:} Ing. Renzo Apaza Cutipa \\
+\textbf{Equipo:} Team Sobrevivientes & \textbf{Decisión:} Cierre de Propuesta 2 / Ratificación de Propuesta 1 \\
+\bottomrule
+\end{tabularx}
+
+\vspace{0.2cm}
+
+\section{Antecedentes y Contexto de la Decisión}
+Durante la etapa de exploración de la Unidad I, el equipo formuló dos propuestas tecnológicas: \textbf{CASA SCORE} (sistema de recomendación multicriterio para alquileres en Puno) y \textbf{Horus Sentinel} (plataforma geoespacial de mapeo predictivo de delincuencia). Tras la sustentación preliminar y la evaluación de la triple restricción (alcance, tiempo y costo), se convocó a sesión extraordinaria para evaluar la factibilidad técnica y operativa de continuar con ambas iniciativas o concentrar esfuerzos en una sola línea de desarrollo.
+
+\section{Fundamentos Técnicos para la Desestimación de Horus Sentinel}
+La propuesta \textit{Horus Sentinel} planteaba un alto valor conceptual enfocado en seguridad ciudadana; no obstante, el análisis de viabilidad técnica arrojó factores críticos e insalvables para el horizonte temporal del semestre:
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Inviabilidad en el Acceso y Disponibilidad de Datos Primarios:}
+    El sistema dependía estrictamente de microdatos criminales georreferenciados (fecha, hora, coordenadas y tipología penal). Dichos registros son de acceso reservado por la Policía Nacional del Perú y el Ministerio del Interior. Tramitar convenios interinstitucionales de interoperabilidad o liberación de datos abiertos excede los plazos lectivos, generando un bloqueo insalvable para entrenar el modelo.
+
+    \item \textbf{Excesiva Complejidad Algorítmica Espaciotemporal:}
+    El modelado probabilístico requería articular tres técnicas de alta dificultad matemática:
+    \begin{itemize}
+        \item Estimación de Densidad Kernel (KDE) para el mapa de calor basal.
+        \item Procesos Puntuales de Poisson No Homogéneos espaciotemporales para estimar réplicas delictivas.
+        \item Algoritmo $A^*$ modificado sobre grafos viales con función biobjetivo: $\text{Costo} = \alpha \cdot \text{Distancia} + \beta \cdot \text{Riesgo}$.
+    \end{itemize}
+    Calibrar, validar y optimizar estos modelos sin distorsión demanda un plazo estimado no menor a 5 meses, incompatible con el ciclo de 6 semanas del curso.
+
+    \item \textbf{Riesgo Crítico de Sesgo Policial (Efecto PredPol):}
+    Sin fuentes diversificadas y auditadas, el algoritmo tiende a sobrevigilar cuadrantes donde históricamente se reportan más denuncias (no necesariamente donde ocurren más delitos), lo que compromete la ética algorítmica exigida en proyectos de ingeniería.
+
+    \item \textbf{Costos de Infraestructura y Servidores Dedicados:}
+    El procesamiento espacial continuo en tiempo real sobre grafos y mapas raster requiere recursos de cómputo en la nube que sobrepasan las capas gratuitas, contraviniendo la política de costo cero del equipo.
+\end{enumerate}
+
+\section{Matriz de Evaluación Crítica de Alternativas}
+\vspace{0.1cm}
+\noindent\begin{tabularx}{\textwidth}{p{4.2cm} X X}
+\toprule
+\textbf{Criterio de Viabilidad} & \textbf{Horus Sentinel (Desestimado)} & \textbf{CASA SCORE (Ratificado)} \\
+\midrule
+\textbf{Dependencia de Terceros} & \textbf{Crítica:} Depende de permisos de la PNP y Serenazgo. & \textbf{Nula:} Levantamiento directo en campo estudiantil. \\
+\addlinespace[2pt]
+\textbf{Curva de Desarrollo} & \textbf{Inviable:} Supera el semestre académico. & \textbf{Viable:} 5 sprints semanales para MVP. \\
+\addlinespace[2pt]
+\textbf{Riesgo de Fracaso en MVP} & \textbf{Muy Alto:} No se garantiza producto funcional en sem. 6. & \textbf{Bajo:} Alcance y arquitectura modular controlada. \\
+\bottomrule
+\end{tabularx}
+
+\clearpage
+
+% =========================================================================
+% PÁGINA 2: RESOLUCIÓN FORMAL, REASIGNACIÓN Y SUSCRIPCIÓN
+% =========================================================================
+
+\section{Sustento de Viabilidad y Ratificación de CASA SCORE (AlquilaPuno)}
+Frente al descarte de Horus Sentinel, el proyecto \textbf{CASA SCORE} demuestra las condiciones óptimas para su ejecución integral:
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Impacto Social Universitario Inmediato:} Resuelve la asimetría y el riesgo de fraude habitacional que padecen los estudiantes que llegan a la UNA Puno.
+    \item \textbf{Modelo Matemático Determinístico y Controlable:} La normalización lineal min-max en escala común $[0, 100]$ y la ponderación multicriterio garantizan rigor analítico verificable sin dependencia de bibliotecas externas complejas.
+    \item \textbf{Stack Técnico Gratuito y Validado:} Operación 100\% en la nube mediante Next.js, Supabase (PostgreSQL), Leaflet y OpenStreetMap, permitiendo entregar un prototipo móvil/web en tiempo récord.
+\end{itemize}
+
+\section{Resoluciones y Acuerdos Formales del Equipo}
+Estando presentes todos los integrantes de \textbf{Team Sobrevivientes}, se adoptan los siguientes acuerdos vinculantes:
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Primero (Cancelación Definitiva):} Declarar formalmente cancelado y archivado el proyecto \textit{Horus Sentinel}, congelando su ficha técnica únicamente como evidencia documental del análisis inicial de cartera de la Unidad I.
+    \item \textbf{Segundo (Adopción de Proyecto Único):} Ratificar a \textbf{CASA SCORE} (bajo el nombre aplicativo de \textit{AlquilaPuno}) como el único proyecto oficial que desarrollará el equipo durante el ciclo académico 2026-I en el curso EST315.
+    \item \textbf{Tercero (Reasignación de Cargas de Trabajo):} Reasignar el 100\% de las horas de trabajo e investigación técnica hacia el diseño de la base de datos relacional en Supabase, el algoritmo de ranking y la arquitectura del MVP.
+    \item \textbf{Cuarto (Control en Repositorio):} La Gestora de Comunicación registrará este acuerdo en el repositorio GitHub, cerrando las ramas experimentales de Horus y procediendo a la apertura de la línea base del proyecto oficial.
+\end{enumerate}
+
+\vspace{0.4cm}
+
+\section{Suscripción y Conformidad del Equipo}
+\noindent En señal de pleno acuerdo con los fundamentos y resoluciones de la presente acta, los miembros del equipo firman a continuación:
+
+\vspace{1.8cm}
+
+% Bloque de firmas blindado con parbox centradas y espacio superior suficiente
+\begin{center}
+\begin{tabular}{c c c}
+    \parbox{6.5cm}{\centering \rule{6.0cm}{0.6pt}\\[5pt] \textbf{Clyde Neil Paricahua Pari}\\[2pt] {\footnotesize Project Manager}} 
+    & \hspace{0.8cm} &
+    \parbox{6.5cm}{\centering \rule{6.0cm}{0.6pt}\\[5pt] \textbf{Ruth Karina Apaza Solis}\\[2pt] {\footnotesize Analista de Planificación}} 
+    \\[2.2cm]
+    \parbox{6.5cm}{\centering \rule{6.0cm}{0.6pt}\\[5pt] \textbf{Eliseo Tarqui Ajahuana}\\[2pt] {\footnotesize Especialista Técnico / Arquitectura}} 
+    & \hspace{0.8cm} &
+    \parbox{6.5cm}{\centering \rule{6.0cm}{0.6pt}\\[5pt] \textbf{Viviana Mary Quisbert Quispe}\\[2pt] {\footnotesize Gestora de Comunicación y Riesgos}}
+\end{tabular}
+\end{center}
+
+\end{document}
