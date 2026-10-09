@@ -10,9 +10,10 @@ import {
   StatusBar,
   ScrollView,
 } from 'react-native';
-import { initDatabase, getAllProperties, resetAndSeedDatabase } from './src/data/database';
+import { initDatabase, getAllProperties, insertProperty, resetAndSeedDatabase } from './src/data/database';
 import { calculateCasaScore } from './src/utils/scoring';
 import { Property, UserPreferences, ScoreBreakdown } from './src/types';
+import { AddPropertyModal } from './src/screens/AddPropertyModal';
 
 interface RankedProperty extends Property {
   breakdown: ScoreBreakdown;
@@ -21,8 +22,8 @@ interface RankedProperty extends Property {
 export default function App() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [rankedList, setRankedList] = useState<RankedProperty[]>([]);
+  const [modalVisible, setModalVisible] = useState(false);
 
-  // Pesos predeterminados del estudiante (suman 100%)
   const [prefs, setPrefs] = useState<UserPreferences>({
     weightPrice: 40,
     weightDistance: 30,
@@ -40,7 +41,6 @@ export default function App() {
     loadData();
   }, []);
 
-  // Recalcular el CASA SCORE en tiempo real ante cambios de preferencias o datos
   useEffect(() => {
     if (properties.length > 0) {
       const calculated = properties.map((prop) => ({
@@ -48,11 +48,15 @@ export default function App() {
         breakdown: calculateCasaScore(prop, prefs),
       }));
 
-      // Orden descendente por score final
       calculated.sort((a, b) => b.breakdown.finalScore - a.breakdown.finalScore);
       setRankedList(calculated);
     }
   }, [properties, prefs]);
+
+  const handleSaveProperty = (newProp: Property) => {
+    insertProperty(newProp);
+    loadData();
+  };
 
   const applyPreset = (type: 'economico' | 'cerca' | 'seguro' | 'equilibrado') => {
     if (type === 'economico') {
@@ -68,74 +72,85 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      <StatusBar barStyle="light-content" backgroundColor="#0A2D5A" />
 
-      {/* Encabezado */}
+      {/* Cabecera Formal Institucional */}
       <View style={styles.header}>
         <View style={styles.headerRow}>
           <Text style={styles.headerTitle}>CasScore Puno</Text>
-          <TouchableOpacity 
-            style={styles.reloadBtn} 
-            onPress={() => { resetAndSeedDatabase(); loadData(); }}
-          >
-            <Text style={styles.reloadBtnText}>↻ Recargar BD</Text>
-          </TouchableOpacity>
+          <View style={styles.actionRow}>
+            <TouchableOpacity style={styles.addBtn} onPress={() => setModalVisible(true)}>
+              <Text style={styles.addBtnText}>+ Publicar Cuarto</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.resetBtn}
+              onPress={() => { resetAndSeedDatabase(); loadData(); }}
+            >
+              <Text style={styles.resetBtnText}>Reiniciar BD</Text>
+            </TouchableOpacity>
+          </View>
         </View>
         <Text style={styles.headerSubtitle}>
-          Recomendación Multicriterio con Penalización por Restricciones
+          Sistema Multicriterio de Evaluacion Habitacional | UNA Puno
         </Text>
       </View>
 
-      {/* Presets de Prioridades */}
+      {/* Selector de Pesos Ponderados */}
       <View style={styles.presetsContainer}>
-        <Text style={styles.presetLabel}>Prioridad del estudiante:</Text>
+        <Text style={styles.presetLabel}>CRITERIO DE PRIORIZACION:</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.presetScroll}>
-          <TouchableOpacity 
-            style={[styles.presetBtn, prefs.weightPrice === 60 && styles.presetBtnActive]} 
+          <TouchableOpacity
+            style={[styles.presetBtn, prefs.weightPrice === 60 && styles.presetBtnActive]}
             onPress={() => applyPreset('economico')}
           >
             <Text style={[styles.presetBtnText, prefs.weightPrice === 60 && styles.presetBtnTextActive]}>
-              💰 Más Barato
+              Menor Precio
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.presetBtn, prefs.weightDistance === 60 && styles.presetBtnActive]} 
+          <TouchableOpacity
+            style={[styles.presetBtn, prefs.weightDistance === 60 && styles.presetBtnActive]}
             onPress={() => applyPreset('cerca')}
           >
             <Text style={[styles.presetBtnText, prefs.weightDistance === 60 && styles.presetBtnTextActive]}>
-              📍 Más Cerca UNA
+              Mayor Proximidad
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.presetBtn, prefs.weightSecurity === 50 && styles.presetBtnActive]} 
+          <TouchableOpacity
+            style={[styles.presetBtn, prefs.weightSecurity === 50 && styles.presetBtnActive]}
             onPress={() => applyPreset('seguro')}
           >
             <Text style={[styles.presetBtnText, prefs.weightSecurity === 50 && styles.presetBtnTextActive]}>
-              🛡️ Más Seguro
+              Mayor Seguridad
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.presetBtn, prefs.weightPrice === 25 && prefs.weightDistance === 25 && styles.presetBtnActive]} 
+          <TouchableOpacity
+            style={[styles.presetBtn, prefs.weightPrice === 25 && prefs.weightDistance === 25 && styles.presetBtnActive]}
             onPress={() => applyPreset('equilibrado')}
           >
-            <Text style={[styles.presetBtnText, prefs.weightPrice === 25 && prefs.weightDistance === 25 && styles.presetBtnTextActive]}>
-              ⚖️ Equilibrado
+            <Text style={[styles.presetBtnText, prefs.weightPrice === 25 && styles.presetBtnTextActive]}>
+              Equilibrado
             </Text>
           </TouchableOpacity>
         </ScrollView>
       </View>
 
-      {/* Listado de Cuartos Clasificados */}
+      {/* Listado Evaluado */}
       <FlatList
         data={rankedList}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
         renderItem={({ item, index }) => (
           <View style={styles.card}>
-            <Image source={{ uri: item.imageUri }} style={styles.cardImage} />
+            {/* Galería Horizontal de 4 Fotografías */}
+            <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} style={styles.gallery}>
+              <Image source={{ uri: item.photos.roomUri }} style={styles.cardImage} />
+              <Image source={{ uri: item.photos.facadeUri }} style={styles.cardImage} />
+              <Image source={{ uri: item.photos.bathroomUri }} style={styles.cardImage} />
+              <Image source={{ uri: item.photos.windowUri }} style={styles.cardImage} />
+            </ScrollView>
 
             <View style={styles.rankBadge}>
-              <Text style={styles.rankBadgeText}>#{index + 1}</Text>
+              <Text style={styles.rankBadgeText}>POSICION {index + 1}</Text>
             </View>
 
             <View style={styles.cardBody}>
@@ -148,43 +163,56 @@ export default function App() {
               </View>
 
               <Text style={styles.cardPrice}>
-                S/. {item.price} <Text style={styles.cardPriceMonth}>/ mes</Text>
-              </Text>
-              <Text style={styles.cardDistance}>
-                📍 {item.distanceMeters}m de la UNA Puno • {item.zone}
+                S/. {item.price} <Text style={styles.cardUnit}>/ mes</Text>
               </Text>
 
-              {/* Insignias de Confianza */}
+              {/* Métricas Dimensionales y de Tiempo */}
+              <View style={styles.metricRow}>
+                <Text style={styles.metricText}>Dimension: {item.sizeSqm} m2</Text>
+                <Text style={styles.metricSeparator}>|</Text>
+                <Text style={styles.metricText}>Distancia: {item.distanceMeters} m</Text>
+                <Text style={styles.metricSeparator}>|</Text>
+                <Text style={styles.metricHighlight}>Tiempo: {item.timeMinutesWalk} min a pie</Text>
+              </View>
+
+              <Text style={styles.cardAddress}>{item.address} - {item.zone}</Text>
+
+              {/* Insignias Formales de Confianza y Habitabilidad */}
               <View style={styles.badgeRow}>
-                {item.landlordVerified && (
-                  <Text style={styles.verifiedBadge}>✓ DNI Validado</Text>
+                {item.hasNaturalLight && (
+                  <Text style={styles.lightBadge}>Luz Natural Directa</Text>
                 )}
-                {item.realPhotosVerified && (
-                  <Text style={styles.photoBadge}>📷 Fotos Verificadas</Text>
+                {item.restrictions.freeEntry24h && (
+                  <Text style={styles.freeEntryBadge}>Entrada Libre 24h</Text>
+                )}
+                {item.landlordVerified && (
+                  <Text style={styles.verifiedBadge}>DNI Verificado</Text>
+                )}
+                {item.restrictions.hasCurfew && (
+                  <Text style={styles.alertBadge}>Toque de queda {item.restrictions.curfewHour}:00 hrs</Text>
+                )}
+                {!item.restrictions.allowsVisitors && (
+                  <Text style={styles.alertBadge}>Sin Visitas</Text>
                 )}
                 {!item.restrictions.declaredTransparently && (
-                  <Text style={styles.alertBadge}>⚠️ Reglas no transparentes</Text>
+                  <Text style={styles.criticalBadge}>Reglas No Transparentes</Text>
                 )}
               </View>
 
-              {/* Caja de Explicabilidad y Desglose */}
+              {/* Desglose Explicativo Cero Caja Negra */}
               <View style={styles.breakdownBox}>
                 <View style={styles.breakdownHeaderRow}>
-                  <Text style={styles.breakdownTitle}>Desglose Base:</Text>
+                  <Text style={styles.breakdownTitle}>Desglose de Puntuacion Base:</Text>
                   <Text style={styles.breakdownBaseScore}>{item.breakdown.baseWeightedScore} pts</Text>
                 </View>
                 <Text style={styles.breakdownMetrics}>
-                  Precio: {item.breakdown.priceScore} | Distancia: {item.breakdown.distanceScore} | Seguridad: {item.breakdown.securityScore} | Servicios: {item.breakdown.servicesScore}
+                  Costo: {item.breakdown.priceScore} | Ubicacion: {item.breakdown.locationScore} | Seguridad: {item.breakdown.securityScore} | Servicios: {item.breakdown.servicesScore}
                 </Text>
 
-                {/* Penalizaciones por Restricciones */}
-                {item.breakdown.restrictionPenalty > 0 && (
-                  <View style={styles.penaltyContainer}>
-                    <Text style={styles.penaltyTitle}>
-                      Penalización por restricciones: -{item.breakdown.restrictionPenalty} pts
-                    </Text>
+                {item.breakdown.explanationNotes.length > 0 && (
+                  <View style={styles.notesContainer}>
                     {item.breakdown.explanationNotes.map((note, nIdx) => (
-                      <Text key={nIdx} style={styles.penaltyNote}>• {note}</Text>
+                      <Text key={nIdx} style={styles.noteItem}>- {note}</Text>
                     ))}
                   </View>
                 )}
@@ -193,112 +221,108 @@ export default function App() {
           </View>
         )}
       />
+
+      <AddPropertyModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSave={handleSaveProperty}
+      />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F4F6F9' },
-  header: { padding: 16, backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderColor: '#E5E9F0' },
+  container: { flex: 1, backgroundColor: '#F1F5F9' },
+  header: {
+    paddingTop: 16,
+    paddingHorizontal: 16,
+    paddingBottom: 14,
+    backgroundColor: '#0A2D5A',
+  },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  headerTitle: { fontSize: 22, fontWeight: 'bold', color: '#0A2D5A' },
-  headerSubtitle: { fontSize: 12, color: '#606060', marginTop: 3 },
-  reloadBtn: { backgroundColor: '#EEF2F6', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 6 },
-  reloadBtnText: { fontSize: 11, color: '#0A2D5A', fontWeight: '600' },
-  presetsContainer: { paddingVertical: 10, paddingHorizontal: 16, backgroundColor: '#FFFFFF' },
-  presetLabel: { fontSize: 12, fontWeight: '600', color: '#707070', marginBottom: 6 },
+  headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' },
+  actionRow: { flexDirection: 'row', gap: 6 },
+  addBtn: { backgroundColor: '#B48214', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 4 },
+  addBtnText: { color: '#FFFFFF', fontSize: 11, fontWeight: '700' },
+  resetBtn: { backgroundColor: '#1E3A5F', paddingHorizontal: 8, paddingVertical: 6, borderRadius: 4 },
+  resetBtnText: { color: '#CBD5E1', fontSize: 11, fontWeight: '600' },
+  headerSubtitle: { fontSize: 11, color: '#CBD5E1', marginTop: 4 },
+  presetsContainer: { paddingVertical: 10, paddingHorizontal: 16, backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderColor: '#E2E8F0' },
+  presetLabel: { fontSize: 10, fontWeight: '700', color: '#64748B', marginBottom: 6 },
   presetScroll: { flexDirection: 'row' },
   presetBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 20,
-    backgroundColor: '#EEF2F6',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 4,
+    backgroundColor: '#F1F5F9',
     marginRight: 8,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
   },
-  presetBtnActive: { backgroundColor: '#0A2D5A' },
-  presetBtnText: { fontSize: 12, fontWeight: '500', color: '#333333' },
-  presetBtnTextActive: { color: '#FFFFFF', fontWeight: 'bold' },
-  listContent: { padding: 16 },
+  presetBtnActive: { backgroundColor: '#0A2D5A', borderColor: '#0A2D5A' },
+  presetBtnText: { fontSize: 11, fontWeight: '600', color: '#334155' },
+  presetBtnTextActive: { color: '#FFFFFF' },
+  listContent: { padding: 14 },
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    borderRadius: 8,
     marginBottom: 16,
     overflow: 'hidden',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    elevation: 2,
   },
-  cardImage: { width: '100%', height: 160 },
+  gallery: { width: '100%', height: 180 },
+  cardImage: { width: 340, height: 180, resizeMode: 'cover' },
   rankBadge: {
     position: 'absolute',
-    top: 12,
-    left: 12,
+    top: 10,
+    left: 10,
     backgroundColor: '#0A2D5A',
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 6,
+    borderRadius: 4,
   },
-  rankBadgeText: { color: '#FFFFFF', fontWeight: 'bold', fontSize: 12 },
+  rankBadgeText: { color: '#FFFFFF', fontWeight: 'bold', fontSize: 10, letterSpacing: 0.5 },
   cardBody: { padding: 14 },
   cardHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  cardTitle: { fontSize: 16, fontWeight: 'bold', color: '#1A1A1A', flex: 1, marginRight: 8 },
+  cardTitle: { fontSize: 15, fontWeight: '700', color: '#0F172A', flex: 1, marginRight: 8 },
   scorePill: {
-    backgroundColor: '#E8F5E9',
-    paddingHorizontal: 10,
+    backgroundColor: '#F0FDF4',
+    paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 8,
+    borderRadius: 6,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#C8E6C9',
+    borderColor: '#86EFAC',
   },
-  scorePillValue: { fontSize: 18, fontWeight: 'bold', color: '#2E7D32' },
-  scorePillLabel: { fontSize: 8, fontWeight: 'bold', color: '#2E7D32' },
+  scorePillValue: { fontSize: 16, fontWeight: 'bold', color: '#166534' },
+  scorePillLabel: { fontSize: 8, fontWeight: '700', color: '#166534' },
   cardPrice: { fontSize: 18, fontWeight: 'bold', color: '#0A2D5A', marginTop: 4 },
-  cardPriceMonth: { fontSize: 12, fontWeight: 'normal', color: '#666666' },
-  cardDistance: { fontSize: 12, color: '#555555', marginTop: 3 },
-  badgeRow: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 8, gap: 6 },
-  verifiedBadge: {
-    fontSize: 10,
-    backgroundColor: '#E3F2FD',
-    color: '#0D47A1',
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderRadius: 4,
-    fontWeight: '600',
-  },
-  photoBadge: {
-    fontSize: 10,
-    backgroundColor: '#F3E5F5',
-    color: '#6A1B9A',
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderRadius: 4,
-    fontWeight: '600',
-  },
-  alertBadge: {
-    fontSize: 10,
-    backgroundColor: '#FFEBEE',
-    color: '#C62828',
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderRadius: 4,
-    fontWeight: '600',
-  },
+  cardUnit: { fontSize: 11, fontWeight: 'normal', color: '#64748B' },
+  metricRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
+  metricText: { fontSize: 11, color: '#475569' },
+  metricSeparator: { marginHorizontal: 6, color: '#CBD5E1', fontSize: 11 },
+  metricHighlight: { fontSize: 11, fontWeight: '700', color: '#0A2D5A' },
+  cardAddress: { fontSize: 11, color: '#64748B', marginTop: 3 },
+  badgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
+  lightBadge: { fontSize: 10, backgroundColor: '#FEF3C7', color: '#92400E', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, fontWeight: '600' },
+  freeEntryBadge: { fontSize: 10, backgroundColor: '#E0E7FF', color: '#3730A3', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, fontWeight: '600' },
+  verifiedBadge: { fontSize: 10, backgroundColor: '#F1F5F9', color: '#0A2D5A', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, fontWeight: '600', borderWidth: 1, borderColor: '#CBD5E1' },
+  alertBadge: { fontSize: 10, backgroundColor: '#FEE2E2', color: '#991B1B', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, fontWeight: '600' },
+  criticalBadge: { fontSize: 10, backgroundColor: '#7F1D1D', color: '#FFFFFF', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, fontWeight: '700' },
   breakdownBox: {
     marginTop: 10,
     padding: 10,
-    backgroundColor: '#F8F9FA',
-    borderRadius: 8,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 6,
     borderLeftWidth: 3,
     borderColor: '#B48214',
   },
-  breakdownHeaderRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  breakdownTitle: { fontSize: 11, fontWeight: 'bold', color: '#444444' },
-  breakdownBaseScore: { fontSize: 11, fontWeight: 'bold', color: '#0A2D5A' },
-  breakdownMetrics: { fontSize: 10, color: '#666666', marginTop: 3 },
-  penaltyContainer: { marginTop: 6, paddingTop: 6, borderTopWidth: 1, borderColor: '#EEEEEE' },
-  penaltyTitle: { fontSize: 10, fontWeight: 'bold', color: '#D32F2F' },
-  penaltyNote: { fontSize: 9, color: '#B71C1C', marginTop: 1 },
+  breakdownHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 },
+  breakdownTitle: { fontSize: 10, fontWeight: '700', color: '#334155', textTransform: 'uppercase' },
+  breakdownBaseScore: { fontSize: 10, fontWeight: '700', color: '#0A2D5A' },
+  breakdownMetrics: { fontSize: 10, color: '#64748B' },
+  notesContainer: { marginTop: 6, paddingTop: 6, borderTopWidth: 1, borderColor: '#E2E8F0' },
+  noteItem: { fontSize: 9.5, color: '#475569', marginTop: 1 },
 });

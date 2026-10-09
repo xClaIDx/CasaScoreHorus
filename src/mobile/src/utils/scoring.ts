@@ -1,25 +1,31 @@
 import { Property, UserPreferences, ScoreBreakdown, RoomRestrictions } from '../types';
 
-// Normalización Min-Max inversa para costos (menor precio = mayor puntaje)
-export function normalizePrice(price: number, minPrice = 150, maxPrice = 800): number {
+// Normalización Min-Max inversa de precio (escala 0 a 100)
+export function normalizePrice(price: number, minPrice = 140, maxPrice = 850): number {
   if (price <= minPrice) return 100;
   if (price >= maxPrice) return 0;
   return Math.round(((maxPrice - price) / (maxPrice - minPrice)) * 100);
 }
 
-// Normalización Min-Max inversa para distancia a la UNA Puno
-export function normalizeDistance(distance: number, minDistance = 50, maxDistance = 3000): number {
-  if (distance <= minDistance) return 100;
-  if (distance >= maxDistance) return 0;
-  return Math.round(((maxDistance - distance) / (maxDistance - minDistance)) * 100);
+// Normalización conjunta de ubicación: 50% metros y 50% tiempo peatonal
+export function normalizeLocation(distanceMeters: number, timeMinutes: number): number {
+  // Metros: de 50m (100 pts) a 3000m (0 pts)
+  const normDist = distanceMeters <= 50 ? 100 : distanceMeters >= 3000 ? 0 :
+    Math.round(((3000 - distanceMeters) / (3000 - 50)) * 100);
+
+  // Minutos: de 2 min (100 pts) a 40 min (0 pts)
+  const normTime = timeMinutes <= 2 ? 100 : timeMinutes >= 40 ? 0 :
+    Math.round(((40 - timeMinutes) / (40 - 2)) * 100);
+
+  return Math.round((normDist * 0.5) + (normTime * 0.5));
 }
 
-// Normalización lineal para seguridad (1 a 5 estrellas)
+// Normalización lineal de seguridad (1 a 5)
 export function normalizeSecurity(rating: number): number {
   return Math.round(Math.min(Math.max((rating / 5) * 100, 0), 100));
 }
 
-// Puntuación de servicios básicos 24 horas
+// Puntuación de servicios básicos las 24 horas
 export function normalizeServices(services: { water: boolean; electricity: boolean; internet: boolean }): number {
   let score = 0;
   if (services.water) score += 40;
@@ -28,70 +34,102 @@ export function normalizeServices(services: { water: boolean; electricity: boole
   return score;
 }
 
-// Cálculo de deducción por restricciones
-export function calculateRestrictionsPenalty(restrictions: RoomRestrictions): { penalty: number; notes: string[] } {
+// Cálculo acumulativo de penalizaciones y bonificaciones
+export function evaluateConditionAdjustments(
+  restrictions: RoomRestrictions,
+  hasNaturalLight: boolean,
+  sizeSqm: number
+): { penalty: number; bonus: number; notes: string[] } {
   let penalty = 0;
+  let bonus = 0;
   const notes: string[] = [];
 
-  // Penalización por hora de entrada / toque de queda
+  // Bonificaciones
+  if (hasNaturalLight) {
+    bonus += 8;
+    notes.push('Bonificación: Iluminación natural directa (+8 pts)');
+  }
+
+  if (restrictions.freeEntry24h) {
+    bonus += 5;
+    notes.push('Bonificación: Acceso libre 24 horas con llave propia (+5 pts)');
+  }
+
+  if (sizeSqm >= 16) {
+    bonus += 4;
+    notes.push(`Bonificación: Amplitud de habitación (${sizeSqm} m2) (+4 pts)`);
+  }
+
+  // Penalizaciones acumulativas por restricciones
   if (restrictions.hasCurfew) {
     const hour = restrictions.curfewHour ?? 22;
-    if (hour <= 21) {
-      penalty += 15;
-      notes.push('Toque de queda estricto (9:00 PM o antes): -15 pts');
+    if (hour <= 20) {
+      penalty += 20;
+      notes.push(`Penalización severa: Toque de queda ${hour}:00 hrs (-20 pts)`);
     } else if (hour <= 22) {
-      penalty += 10;
-      notes.push('Toque de queda regular (10:00 PM): -10 pts');
+      penalty += 12;
+      notes.push(`Penalización: Toque de queda ${hour}:00 hrs (-12 pts)`);
     } else {
-      penalty += 5;
-      notes.push(`Hora límite (${hour}:00 hrs): -5 pts`);
+      penalty += 6;
+      notes.push(`Penalización: Restricción nocturna ${hour}:00 hrs (-6 pts)`);
     }
   }
 
-  // Penalización por visitas
   if (!restrictions.allowsVisitors) {
-    penalty += 10;
-    notes.push('No permite visitas de estudio/familiares: -10 pts');
+    penalty += 12;
+    notes.push('Penalización: Prohibición total de visitas (-12 pts)');
   }
 
-  // Falta de transparencia declarada (penalización crítica de confianza)
+  if (!restrictions.allowsCooking) {
+    penalty += 8;
+    notes.push('Penalización: No se permite cocinar (-8 pts)');
+  }
+
   if (!restrictions.declaredTransparently) {
-    penalty += 20;
-    notes.push('Restricciones no transparentadas en el anuncio: -20 pts');
+    penalty += 25;
+    notes.push('Penalización crítica: Restricciones no declaradas en el aviso (-25 pts)');
   }
 
-  return { penalty, notes };
+  return { penalty, bonus, notes };
 }
 
-// Cálculo formal del CASA SCORE
+// Motor consolidado del CASA SCORE
 export function calculateCasaScore(property: Property, prefs: UserPreferences): ScoreBreakdown {
   const pScore = normalizePrice(property.price);
-  const dScore = normalizeDistance(property.distanceMeters);
+  const locScore = normalizeLocation(property.distanceMeters, property.timeMinutesWalk);
   const sScore = normalizeSecurity(property.securityRating);
   const srvScore = normalizeServices(property.services24h);
 
   const totalWeight = prefs.weightPrice + prefs.weightDistance + prefs.weightSecurity + prefs.weightServices;
   const factor = totalWeight > 0 ? totalWeight : 1;
 
-  // Puntaje ponderado base
+  // Puntuación base ponderada
   const baseWeightedScore = Math.round(
     (pScore * prefs.weightPrice +
-      dScore * prefs.weightDistance +
+      locScore * prefs.weightDistance +
       sScore * prefs.weightSecurity +
       srvScore * prefs.weightServices) / factor
   );
 
-  // Evaluación de impacto por restricciones
-  const { penalty, notes } = calculateRestrictionsPenalty(property.restrictions);
+  const { penalty, bonus, notes } = evaluateConditionAdjustments(
+    property.restrictions,
+    property.hasNaturalLight,
+    property.sizeSqm
+  );
 
-  // El score final no puede ser menor a 0 ni mayor a 100
-  const finalScore = Math.max(0, Math.min(100, baseWeightedScore - penalty));
+  const naturalLightBonus = property.hasNaturalLight ? 8 : 0;
+  const freeEntryBonus = property.restrictions.freeEntry24h ? 5 : 0;
+
+  // Puntuación final acotada al intervalo estricto [0, 100]
+  const finalScore = Math.max(0, Math.min(100, baseWeightedScore + bonus - penalty));
 
   return {
     priceScore: pScore,
-    distanceScore: dScore,
+    locationScore: locScore,
     securityScore: sScore,
     servicesScore: srvScore,
+    naturalLightBonus,
+    freeEntryBonus,
     restrictionPenalty: penalty,
     baseWeightedScore,
     finalScore,

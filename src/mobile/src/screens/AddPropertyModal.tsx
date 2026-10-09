@@ -1,0 +1,354 @@
+import React, { useState } from 'react';
+import {
+  Modal,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  Alert,
+  Image,
+} from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { Property, PropertyPhotos } from '../types';
+
+interface AddPropertyModalProps {
+  visible: boolean;
+  onClose: () => void;
+  onSave: (property: Property) => void;
+}
+
+export function AddPropertyModal({ visible, onClose, onSave }: AddPropertyModalProps) {
+  const [title, setTitle] = useState('');
+  const [price, setPrice] = useState('');
+  const [sizeSqm, setSizeSqm] = useState('');
+  const [distanceMeters, setDistanceMeters] = useState('');
+  const [timeMinutesWalk, setTimeMinutesWalk] = useState('');
+  const [address, setAddress] = useState('');
+  const [zone, setZone] = useState('');
+
+  // Estados booleanos
+  const [hasNaturalLight, setHasNaturalLight] = useState(false);
+  const [freeEntry24h, setFreeEntry24h] = useState(false);
+  const [hasCurfew, setHasCurfew] = useState(false);
+  const [curfewHour, setCurfewHour] = useState('22');
+  const [allowsVisitors, setAllowsVisitors] = useState(true);
+  const [allowsCooking, setAllowsCooking] = useState(true);
+
+  // Cuatro fotos obligatorias
+  const [photos, setPhotos] = useState<Partial<PropertyPhotos>>({});
+
+  const pickImage = async (type: keyof PropertyPhotos) => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert('Permiso requerido', 'Se requiere acceso a la galeria para verificar el inmueble.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.7,
+    });
+
+    if (!result.canceled && result.assets[0].uri) {
+      setPhotos((prev) => ({ ...prev, [type]: result.assets[0].uri }));
+    }
+  };
+
+  const handleSubmit = () => {
+    // Validaciones estrictas
+    if (!title.trim() || !price || !sizeSqm || !distanceMeters || !timeMinutesWalk || !address.trim() || !zone.trim()) {
+      Alert.alert('Datos incompletos', 'Todos los campos tecnicos y de ubicacion son obligatorios.');
+      return;
+    }
+
+    if (!photos.facadeUri || !photos.roomUri || !photos.bathroomUri || !photos.windowUri) {
+      Alert.alert(
+        'Inspeccion Fotografica Incompleta',
+        'Es obligatorio adjuntar las 4 fotografias categorizadas: Fachada, Habitacion, Banos y Ventana con luz natural.'
+      );
+      return;
+    }
+
+    const newProperty: Property = {
+      id: `puno-${Date.now()}`,
+      title: title.trim(),
+      price: parseFloat(price),
+      sizeSqm: parseFloat(sizeSqm),
+      distanceMeters: parseFloat(distanceMeters),
+      timeMinutesWalk: parseFloat(timeMinutesWalk),
+      hasNaturalLight,
+      securityRating: 4.0, // Calificacion base estimada
+      services24h: { water: true, electricity: true, internet: true },
+      restrictions: {
+        freeEntry24h,
+        hasCurfew,
+        curfewHour: hasCurfew ? parseInt(curfewHour, 10) : undefined,
+        allowsVisitors,
+        allowsCooking,
+        petFriendly: false,
+        declaredTransparently: true,
+      },
+      landlordVerified: true,
+      realPhotosVerified: true,
+      photos: photos as PropertyPhotos,
+      address: address.trim(),
+      zone: zone.trim(),
+    };
+
+    onSave(newProperty);
+    onClose();
+  };
+
+  return (
+    <Modal visible={visible} animationType="slide" transparent={false}>
+      <View style={styles.modalContainer}>
+        <View style={styles.modalHeader}>
+          <Text style={styles.modalHeaderTitle}>Registro Tecnico de Inmueble</Text>
+          <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+            <Text style={styles.closeBtnText}>Cerrar</Text>
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView contentContainerStyle={styles.formContent}>
+          <Text style={styles.sectionLabel}>Datos Generales y Costo</Text>
+          <TextInput
+            placeholder="Titulo descriptivo del cuarto"
+            value={title}
+            onChangeText={setTitle}
+            style={styles.input}
+          />
+          <View style={styles.rowInputs}>
+            <TextInput
+              placeholder="Precio mensual (S/.)"
+              value={price}
+              onChangeText={setPrice}
+              keyboardType="numeric"
+              style={[styles.input, styles.flexInput]}
+            />
+            <TextInput
+              placeholder="Tamano (m2)"
+              value={sizeSqm}
+              onChangeText={setSizeSqm}
+              keyboardType="numeric"
+              style={[styles.input, styles.flexInput]}
+            />
+          </View>
+
+          <Text style={styles.sectionLabel}>Ubicacion Respecto a la UNA Puno</Text>
+          <View style={styles.rowInputs}>
+            <TextInput
+              placeholder="Distancia (metros)"
+              value={distanceMeters}
+              onChangeText={setDistanceMeters}
+              keyboardType="numeric"
+              style={[styles.input, styles.flexInput]}
+            />
+            <TextInput
+              placeholder="Tiempo caminando (minutos)"
+              value={timeMinutesWalk}
+              onChangeText={setTimeMinutesWalk}
+              keyboardType="numeric"
+              style={[styles.input, styles.flexInput]}
+            />
+          </View>
+          <TextInput
+            placeholder="Direccion exacta (Ej. Av. Floral 120)"
+            value={address}
+            onChangeText={setAddress}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="Barrio o sector (Ej. Laykakota, Bellavista)"
+            value={zone}
+            onChangeText={setZone}
+            style={styles.input}
+          />
+
+          <Text style={styles.sectionLabel}>Condiciones y Restricciones</Text>
+          <TouchableOpacity
+            style={[styles.toggleBtn, hasNaturalLight && styles.toggleBtnActive]}
+            onPress={() => setHasNaturalLight(!hasNaturalLight)}
+          >
+            <Text style={[styles.toggleBtnText, hasNaturalLight && styles.toggleBtnTextActive]}>
+              Iluminacion Natural Directa (Otorga puntos)
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.toggleBtn, freeEntry24h && styles.toggleBtnActive]}
+            onPress={() => setFreeEntry24h(!freeEntry24h)}
+          >
+            <Text style={[styles.toggleBtnText, freeEntry24h && styles.toggleBtnTextActive]}>
+              Entrada Libre 24h con Llave Propia (Otorga puntos)
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.toggleBtn, hasCurfew && styles.toggleBtnAlert]}
+            onPress={() => setHasCurfew(!hasCurfew)}
+          >
+            <Text style={[styles.toggleBtnText, hasCurfew && styles.toggleBtnTextAlert]}>
+              Tiene Toque de Queda / Cierre de Puerta (Resta puntos)
+            </Text>
+          </TouchableOpacity>
+
+          {hasCurfew && (
+            <TextInput
+              placeholder="Hora limite de llegada (formato 24h, ej. 22 para 10 PM)"
+              value={curfewHour}
+              onChangeText={setCurfewHour}
+              keyboardType="numeric"
+              style={styles.input}
+            />
+          )}
+
+          <TouchableOpacity
+            style={[styles.toggleBtn, !allowsVisitors && styles.toggleBtnAlert]}
+            onPress={() => setAllowsVisitors(!allowsVisitors)}
+          >
+            <Text style={[styles.toggleBtnText, !allowsVisitors && styles.toggleBtnTextAlert]}>
+              {allowsVisitors ? 'Permite visitas de estudio' : 'Prohibicion total de visitas (Resta puntos)'}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.toggleBtn, !allowsCooking && styles.toggleBtnAlert]}
+            onPress={() => setAllowsCooking(!allowsCooking)}
+          >
+            <Text style={[styles.toggleBtnText, !allowsCooking && styles.toggleBtnTextAlert]}>
+              {allowsCooking ? 'Permite cocinar' : 'Prohibicion de cocinar (Resta puntos)'}
+            </Text>
+          </TouchableOpacity>
+
+          <Text style={styles.sectionLabel}>Inspeccion Fotografica (4 Obligatorias)</Text>
+          <View style={styles.photoGrid}>
+            <View style={styles.photoBox}>
+              <Text style={styles.photoBoxTitle}>1. Fachada / Acceso</Text>
+              {photos.facadeUri ? (
+                <Image source={{ uri: photos.facadeUri }} style={styles.previewImage} />
+              ) : (
+                <TouchableOpacity style={styles.uploadBtn} onPress={() => pickImage('facadeUri')}>
+                  <Text style={styles.uploadBtnText}>Seleccionar</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            <View style={styles.photoBox}>
+              <Text style={styles.photoBoxTitle}>2. Habitacion</Text>
+              {photos.roomUri ? (
+                <Image source={{ uri: photos.roomUri }} style={styles.previewImage} />
+              ) : (
+                <TouchableOpacity style={styles.uploadBtn} onPress={() => pickImage('roomUri')}>
+                  <Text style={styles.uploadBtnText}>Seleccionar</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            <View style={styles.photoBox}>
+              <Text style={styles.photoBoxTitle}>3. Banos</Text>
+              {photos.bathroomUri ? (
+                <Image source={{ uri: photos.bathroomUri }} style={styles.previewImage} />
+              ) : (
+                <TouchableOpacity style={styles.uploadBtn} onPress={() => pickImage('bathroomUri')}>
+                  <Text style={styles.uploadBtnText}>Seleccionar</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            <View style={styles.photoBox}>
+              <Text style={styles.photoBoxTitle}>4. Ventana / Luz</Text>
+              {photos.windowUri ? (
+                <Image source={{ uri: photos.windowUri }} style={styles.previewImage} />
+              ) : (
+                <TouchableOpacity style={styles.uploadBtn} onPress={() => pickImage('windowUri')}>
+                  <Text style={styles.uploadBtnText}>Seleccionar</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+
+          <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit}>
+            <Text style={styles.submitBtnText}>Registrar Publicacion</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </View>
+    </Modal>
+  );
+}
+
+const styles = StyleSheet.create({
+  modalContainer: { flex: 1, backgroundColor: '#FFFFFF' },
+  modalHeader: {
+    paddingTop: 45,
+    paddingHorizontal: 16,
+    paddingBottom: 14,
+    backgroundColor: '#0A2D5A',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  modalHeaderTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' },
+  closeBtn: { padding: 6 },
+  closeBtnText: { color: '#E2E8F0', fontSize: 13, fontWeight: '600' },
+  formContent: { padding: 16, paddingBottom: 40 },
+  sectionLabel: { fontSize: 13, fontWeight: '700', color: '#0A2D5A', marginTop: 14, marginBottom: 8, textTransform: 'uppercase' },
+  input: {
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: '#1E293B',
+    marginBottom: 10,
+    backgroundColor: '#F8FAFC',
+  },
+  rowInputs: { flexDirection: 'row', gap: 10 },
+  flexInput: { flex: 1 },
+  toggleBtn: {
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    borderRadius: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+    backgroundColor: '#F8FAFC',
+  },
+  toggleBtnActive: { borderColor: '#0A2D5A', backgroundColor: '#EDF2F7' },
+  toggleBtnAlert: { borderColor: '#E53E3E', backgroundColor: '#FFF5F5' },
+  toggleBtnText: { fontSize: 12, color: '#4A5568', fontWeight: '500' },
+  toggleBtnTextActive: { color: '#0A2D5A', fontWeight: '700' },
+  toggleBtnTextAlert: { color: '#C53030', fontWeight: '700' },
+  photoGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 4 },
+  photoBox: {
+    width: '48%',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    borderRadius: 6,
+    padding: 8,
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+  },
+  photoBoxTitle: { fontSize: 11, fontWeight: '600', color: '#4A5568', marginBottom: 6 },
+  uploadBtn: {
+    backgroundColor: '#0A2D5A',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 4,
+    marginTop: 8,
+  },
+  uploadBtnText: { color: '#FFFFFF', fontSize: 11, fontWeight: '600' },
+  previewImage: { width: '100%', height: 90, borderRadius: 4, resizeMode: 'cover' },
+  submitBtn: {
+    backgroundColor: '#0A2D5A',
+    borderRadius: 6,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 22,
+  },
+  submitBtnText: { color: '#FFFFFF', fontSize: 14, fontWeight: '700', textTransform: 'uppercase' },
+});
