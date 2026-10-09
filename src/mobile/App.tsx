@@ -74,7 +74,6 @@ export default function App() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#0A2D5A" />
 
-      {/* Cabecera Formal Institucional */}
       <View style={styles.header}>
         <View style={styles.headerRow}>
           <Text style={styles.headerTitle}>CasScore Puno</Text>
@@ -95,7 +94,6 @@ export default function App() {
         </Text>
       </View>
 
-      {/* Selector de Pesos Ponderados */}
       <View style={styles.presetsContainer}>
         <Text style={styles.presetLabel}>CRITERIO DE PRIORIZACION:</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.presetScroll}>
@@ -134,14 +132,12 @@ export default function App() {
         </ScrollView>
       </View>
 
-      {/* Listado Evaluado */}
       <FlatList
         data={rankedList}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
         renderItem={({ item, index }) => (
           <View style={styles.card}>
-            {/* Galería Horizontal de 4 Fotografías */}
             <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} style={styles.gallery}>
               <Image source={{ uri: item.photos.roomUri }} style={styles.cardImage} />
               <Image source={{ uri: item.photos.facadeUri }} style={styles.cardImage} />
@@ -166,7 +162,6 @@ export default function App() {
                 S/. {item.price} <Text style={styles.cardUnit}>/ mes</Text>
               </Text>
 
-              {/* Métricas Dimensionales y de Tiempo */}
               <View style={styles.metricRow}>
                 <Text style={styles.metricText}>Dimension: {item.sizeSqm} m2</Text>
                 <Text style={styles.metricSeparator}>|</Text>
@@ -177,7 +172,6 @@ export default function App() {
 
               <Text style={styles.cardAddress}>{item.address} - {item.zone}</Text>
 
-              {/* Insignias Formales de Confianza y Habitabilidad */}
               <View style={styles.badgeRow}>
                 {item.hasNaturalLight && (
                   <Text style={styles.lightBadge}>Luz Natural Directa</Text>
@@ -199,7 +193,6 @@ export default function App() {
                 )}
               </View>
 
-              {/* Desglose Explicativo Cero Caja Negra */}
               <View style={styles.breakdownBox}>
                 <View style={styles.breakdownHeaderRow}>
                   <Text style={styles.breakdownTitle}>Desglose de Puntuacion Base:</Text>

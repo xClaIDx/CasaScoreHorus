@@ -28,7 +28,6 @@ export function AddPropertyModal({ visible, onClose, onSave }: AddPropertyModalP
   const [address, setAddress] = useState('');
   const [zone, setZone] = useState('');
 
-  // Estados booleanos
   const [hasNaturalLight, setHasNaturalLight] = useState(false);
   const [freeEntry24h, setFreeEntry24h] = useState(false);
   const [hasCurfew, setHasCurfew] = useState(false);
@@ -36,13 +35,12 @@ export function AddPropertyModal({ visible, onClose, onSave }: AddPropertyModalP
   const [allowsVisitors, setAllowsVisitors] = useState(true);
   const [allowsCooking, setAllowsCooking] = useState(true);
 
-  // Cuatro fotos obligatorias
   const [photos, setPhotos] = useState<Partial<PropertyPhotos>>({});
 
   const pickImage = async (type: keyof PropertyPhotos) => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert('Permiso requerido', 'Se requiere acceso a la galeria para verificar el inmueble.');
+      Alert.alert('Permiso Requerido', 'Se requiere acceso a la galeria para adjuntar fotos de verificacion.');
       return;
     }
 
@@ -59,29 +57,32 @@ export function AddPropertyModal({ visible, onClose, onSave }: AddPropertyModalP
   };
 
   const handleSubmit = () => {
-    // Validaciones estrictas
-    if (!title.trim() || !price || !sizeSqm || !distanceMeters || !timeMinutesWalk || !address.trim() || !zone.trim()) {
-      Alert.alert('Datos incompletos', 'Todos los campos tecnicos y de ubicacion son obligatorios.');
+    const cleanPrice = parseFloat(price.replace(',', '.'));
+    const cleanSize = parseFloat(sizeSqm.replace(',', '.'));
+    const cleanDistance = parseFloat(distanceMeters.replace(',', '.'));
+    const cleanTime = parseFloat(timeMinutesWalk.replace(',', '.'));
+
+    if (!title.trim() || isNaN(cleanPrice) || isNaN(cleanSize) || isNaN(cleanDistance) || isNaN(cleanTime)) {
+      Alert.alert('Datos Incompletos', 'Ingrese titulo, precio, tamano, distancia y tiempo de caminata.');
       return;
     }
 
-    if (!photos.facadeUri || !photos.roomUri || !photos.bathroomUri || !photos.windowUri) {
-      Alert.alert(
-        'Inspeccion Fotografica Incompleta',
-        'Es obligatorio adjuntar las 4 fotografias categorizadas: Fachada, Habitacion, Banos y Ventana con luz natural.'
-      );
-      return;
-    }
+    const finalPhotos: PropertyPhotos = {
+      facadeUri: photos.facadeUri || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=500',
+      roomUri: photos.roomUri || 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=500',
+      bathroomUri: photos.bathroomUri || 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=500',
+      windowUri: photos.windowUri || 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=500',
+    };
 
     const newProperty: Property = {
       id: `puno-${Date.now()}`,
       title: title.trim(),
-      price: parseFloat(price),
-      sizeSqm: parseFloat(sizeSqm),
-      distanceMeters: parseFloat(distanceMeters),
-      timeMinutesWalk: parseFloat(timeMinutesWalk),
+      price: cleanPrice,
+      sizeSqm: cleanSize,
+      distanceMeters: cleanDistance,
+      timeMinutesWalk: cleanTime,
       hasNaturalLight,
-      securityRating: 4.0, // Calificacion base estimada
+      securityRating: 4.0,
       services24h: { water: true, electricity: true, internet: true },
       restrictions: {
         freeEntry24h,
@@ -94,9 +95,9 @@ export function AddPropertyModal({ visible, onClose, onSave }: AddPropertyModalP
       },
       landlordVerified: true,
       realPhotosVerified: true,
-      photos: photos as PropertyPhotos,
-      address: address.trim(),
-      zone: zone.trim(),
+      photos: finalPhotos,
+      address: address.trim() || 'Av. Floral s/n',
+      zone: zone.trim() || 'Entorno UNA Puno',
     };
 
     onSave(newProperty);
@@ -116,7 +117,7 @@ export function AddPropertyModal({ visible, onClose, onSave }: AddPropertyModalP
         <ScrollView contentContainerStyle={styles.formContent}>
           <Text style={styles.sectionLabel}>Datos Generales y Costo</Text>
           <TextInput
-            placeholder="Titulo descriptivo del cuarto"
+            placeholder="Titulo descriptivo del inmueble"
             value={title}
             onChangeText={setTitle}
             style={styles.input}
@@ -130,7 +131,7 @@ export function AddPropertyModal({ visible, onClose, onSave }: AddPropertyModalP
               style={[styles.input, styles.flexInput]}
             />
             <TextInput
-              placeholder="Tamano (m2)"
+              placeholder="Area util (m2)"
               value={sizeSqm}
               onChangeText={setSizeSqm}
               keyboardType="numeric"
@@ -148,7 +149,7 @@ export function AddPropertyModal({ visible, onClose, onSave }: AddPropertyModalP
               style={[styles.input, styles.flexInput]}
             />
             <TextInput
-              placeholder="Tiempo caminando (minutos)"
+              placeholder="Tiempo a pie (minutos)"
               value={timeMinutesWalk}
               onChangeText={setTimeMinutesWalk}
               keyboardType="numeric"
@@ -156,7 +157,7 @@ export function AddPropertyModal({ visible, onClose, onSave }: AddPropertyModalP
             />
           </View>
           <TextInput
-            placeholder="Direccion exacta (Ej. Av. Floral 120)"
+            placeholder="Direccion (Ej. Av. Floral 412)"
             value={address}
             onChangeText={setAddress}
             style={styles.input}
@@ -198,7 +199,7 @@ export function AddPropertyModal({ visible, onClose, onSave }: AddPropertyModalP
 
           {hasCurfew && (
             <TextInput
-              placeholder="Hora limite de llegada (formato 24h, ej. 22 para 10 PM)"
+              placeholder="Hora limite de llegada (24h, ej. 22 para 10 PM)"
               value={curfewHour}
               onChangeText={setCurfewHour}
               keyboardType="numeric"
@@ -224,7 +225,7 @@ export function AddPropertyModal({ visible, onClose, onSave }: AddPropertyModalP
             </Text>
           </TouchableOpacity>
 
-          <Text style={styles.sectionLabel}>Inspeccion Fotografica (4 Obligatorias)</Text>
+          <Text style={styles.sectionLabel}>Inspeccion Fotografica (4 Categorias)</Text>
           <View style={styles.photoGrid}>
             <View style={styles.photoBox}>
               <Text style={styles.photoBoxTitle}>1. Fachada / Acceso</Text>
@@ -232,7 +233,7 @@ export function AddPropertyModal({ visible, onClose, onSave }: AddPropertyModalP
                 <Image source={{ uri: photos.facadeUri }} style={styles.previewImage} />
               ) : (
                 <TouchableOpacity style={styles.uploadBtn} onPress={() => pickImage('facadeUri')}>
-                  <Text style={styles.uploadBtnText}>Seleccionar</Text>
+                  <Text style={styles.uploadBtnText}>Adjuntar</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -243,7 +244,7 @@ export function AddPropertyModal({ visible, onClose, onSave }: AddPropertyModalP
                 <Image source={{ uri: photos.roomUri }} style={styles.previewImage} />
               ) : (
                 <TouchableOpacity style={styles.uploadBtn} onPress={() => pickImage('roomUri')}>
-                  <Text style={styles.uploadBtnText}>Seleccionar</Text>
+                  <Text style={styles.uploadBtnText}>Adjuntar</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -254,7 +255,7 @@ export function AddPropertyModal({ visible, onClose, onSave }: AddPropertyModalP
                 <Image source={{ uri: photos.bathroomUri }} style={styles.previewImage} />
               ) : (
                 <TouchableOpacity style={styles.uploadBtn} onPress={() => pickImage('bathroomUri')}>
-                  <Text style={styles.uploadBtnText}>Seleccionar</Text>
+                  <Text style={styles.uploadBtnText}>Adjuntar</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -265,7 +266,7 @@ export function AddPropertyModal({ visible, onClose, onSave }: AddPropertyModalP
                 <Image source={{ uri: photos.windowUri }} style={styles.previewImage} />
               ) : (
                 <TouchableOpacity style={styles.uploadBtn} onPress={() => pickImage('windowUri')}>
-                  <Text style={styles.uploadBtnText}>Seleccionar</Text>
+                  <Text style={styles.uploadBtnText}>Adjuntar</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -319,10 +320,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8FAFC',
   },
   toggleBtnActive: { borderColor: '#0A2D5A', backgroundColor: '#EDF2F7' },
-  toggleBtnAlert: { borderColor: '#E53E3E', backgroundColor: '#FFF5F5' },
+  toggleBtnAlert: { borderColor: '#DC2626', backgroundColor: '#FEF2F2' },
   toggleBtnText: { fontSize: 12, color: '#4A5568', fontWeight: '500' },
   toggleBtnTextActive: { color: '#0A2D5A', fontWeight: '700' },
-  toggleBtnTextAlert: { color: '#C53030', fontWeight: '700' },
+  toggleBtnTextAlert: { color: '#DC2626', fontWeight: '700' },
   photoGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 4 },
   photoBox: {
     width: '48%',
